@@ -1,0 +1,55 @@
+
+
+import BackendUrl from "@/libs/BackendUrl";
+
+export default function ProjectApiList() {
+  const baseUrl = BackendUrl;
+  const apiList = {
+
+    api_Register: `${baseUrl}/api/users/register`,
+    api_updateUser: `${baseUrl}/api/profile/business`,
+    api_Login: `${baseUrl}/api/users/login`,
+
+
+    //chat apis
+
+    api_get_user_chats:`${baseUrl}/api/chat/user`,
+    api_get_user_messages:`${baseUrl}/api/chat`,
+    api_send_message: `${baseUrl}/api/chat/message`,
+    api_initiate_chat: `${baseUrl}/api/chat/initiate`,
+
+    //user apis
+    api_get_all_users: `${baseUrl}/api/users/get`,
+    api_get_user_data: `${baseUrl}/api/users/me`,
+    
+    // post
+    api_postFeed: `${baseUrl}/api/posts/feed`,
+    
+    // product
+    api_addProduct: `${baseUrl}/api/product/add`,
+    api_getProduct: `${baseUrl}/api/product/get`,
+    api_getOthersProduct: `${baseUrl}/api/product/approved/by-user`,
+    api_getProductById: `${baseUrl}/api/product/get`,
+    api_updateProduct: `${baseUrl}/api/product/update`,
+    
+    //user 
+    api_getUserData: `${baseUrl}/api/users/me`,
+    api_getProfileCardData: `${baseUrl}/api/profile/card`,
+    api_getOtherUserData: `${baseUrl}/api/users/get`,
+    api_getAllUser: `${baseUrl}/api/users/approved-users/filter`,
+    
+    //referral
+    api_postReferrals: `${baseUrl}/api/referal/send`,
+    api_getReferrals: `${baseUrl}/api/referal/received`,
+    api_postPoints: `${baseUrl}/api/referal/accept`,
+    
+    //referral
+    api_getupcommingEvents: `${baseUrl}/api/events/upcoming`,
+    api_getupcommingEventbyId: `${baseUrl}/api/events/get-by-id`,
+    api_getCompletedEvents: `${baseUrl}/api/events/completed`,
+    api_postRegisterEvents: `${baseUrl}/api/events/register`,
+
+  };
+
+  return apiList;
+}
