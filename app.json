@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "community-app",
-    "slug": "community-app",
+    "name": "community-admin-app",
+    "slug": "community-admin-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.almaash.communityapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +21,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.almaash.communityapp"
+      "package": "com.almaash.communityapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +39,13 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      "expo-build-properties",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.483558689899-orv1amuafr6umd8gv2skihhoups2oe59"
+        }
       ]
     ],
     "experiments": {
@@ -42,9 +54,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "61a343b0-728a-4230-829f-217a98b4e0c3"
-      }
+        "projectId": "9380a300-5ecd-496b-a587-97edd7a2a6f4"
+      },
+      "googleSignInAndroidClientId": "483558689899-kvf06i7at3flhcc1oqlgv16a1f6bhpes.apps.googleusercontent.com",
+      "googleSignIniOSClientId": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
+      "googleSignInWebClientId": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com"
     },
-    "owner": "kaushalkant"
+    "owner": "kaushalspark"
   }
 }
