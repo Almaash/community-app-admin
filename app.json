@@ -5,12 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "communityapp",
+    "scheme": "communityapp1",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.almaash.communityapp",
+      "bundleIdentifier": "com.almaash.communityapp1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -21,7 +21,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.almaash.communityapp",
+      "package": "com.almaash.communityapp1",
       "googleServicesFile": "./google-services.json"
     },
     "web": {

@@ -1,131 +1,114 @@
-import { useState } from "react";
-import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
-// import { useAuth } from "../context/AuthContext";
-import ProjectApiList from "@/app/api/ProjectApiList";
-import { useAuth } from "@/app/context/AuthContext";
-import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { Image, Text, TouchableOpacity, View, Alert } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { useRouter } from "expo-router";
-import { Platform } from "react-native";
+import ProjectApiList from "@/app/api/ProjectApiList";
+import { useAuth } from "@/app/context/AuthContext";
+import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin";
 
 export default function LoginForm() {
   const { login } = useAuth();
   const { api_Login } = ProjectApiList();
   const router = useRouter();
 
-  const [email, setEmail] = useState("kaushalkantmishra127@gmail.com");
-  const [password, setPassword] = useState("123456");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [message, showMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = async () => {
+  useEffect(() => {
+    GoogleSignin.configure({
+      iosClientId: '483558689899-orv1amuafr6umd8gv2skihhoups2oe59.apps.googleusercontent.com',
+      webClientId: '483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com',
+      profileImageSize: 150
+    })
+  }, [])
+
+  const handleGoogleSignIn = async () => {
     try {
-      setLoading(true);
-      const response = await axios.post(api_Login, {
-        email,
-        password,
-      });
+      setIsSubmitting(true);
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
 
-      const { token, user } = response.data.data;
+      if (isSuccessResponse(response)) {
+        const { idToken } = response.data;
 
-      await AsyncStorage.setItem("userData", JSON.stringify(user));
-      await AsyncStorage.setItem("token", JSON.stringify(token));
-
-      // console.log(token,"---------->")
-      // alert("Login successful");
-      login();
-    } catch (error: any) {
-      console.error("Login failed:", error?.response?.data || error.message);
-      alert("Login failed. Please check your credentials.");
+        if (idToken) {
+          try {
+            const apiResponse = await axios.post(api_Login, { idToken });
+            const { token, user: userData } = apiResponse.data.data || {};
+            console.log(token, "token====================>")
+            await AsyncStorage.setItem("userData", JSON.stringify(userData));
+            await AsyncStorage.setItem("token", token);
+            login();
+            // router.replace("/profile");
+          } catch (apiErr: any) {
+            const errorMessage = apiErr.response?.data?.message || "Login failed";
+            Alert.alert("Error", errorMessage);
+          }
+        } else {
+          Alert.alert("Error", "Google sign-in failed: no token found");
+        }
+      } else {
+        Alert.alert("Info", "Google Signin was cancelled");
+      }
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            Alert.alert("Info", "Google Signin is in progress");
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Alert.alert("Error", "Play services are not available");
+            break;
+          default:
+            Alert.alert("Error", error.code);
+        }
+      } else {
+        Alert.alert("Error", "An error occurred");
+      }
     } finally {
-      setLoading(false); // stop loading in both success and failure
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <View className="flex-1 justify-between">
-      <View className="pt-14 bg-white px-6">
-        {/* Logo */}
-        <View className="items-center mb-6">
-          <Image
-            source={require("../../../assets/images/Logo.png")}
-            style={{ width: 80, height: 80, resizeMode: "contain" }}
-          />
-        </View>
+    <View className="flex-1 justify-center bg-white px-6">
+      {/* Logo */}
+      <View className="items-center mb-8">
+        <Image
+          source={require("../../../assets/images/Logo.png")}
+          style={{ width: 100, height: 100, resizeMode: "contain" }}
+        />
+      </View>
 
-        {/* Heading */}
-        <Text className="text-4xl font-bold text-center">Get Started now</Text>
-        <Text className="text-sm text-gray-500 text-center mb-6 px-16 pt-3">
-          Sign in to access the Admin Dashboard
+      <Text className="text-4xl font-bold text-center mb-4">Welcome Back</Text>
+      <Text className="text-sm text-gray-500 text-center mb-12 px-8">
+        Sign in with your Google account to continue
+      </Text>
+
+      {/* Google Login Button */}
+      <TouchableOpacity
+        disabled={isSubmitting}
+        onPress={handleGoogleSignIn}
+        className={`flex-row items-center justify-center border border-gray-300 rounded-xl py-4 px-6 mb-6 ${isSubmitting ? "opacity-50" : ""
+          }`}
+      >
+        <FontAwesome name="google" size={24} color="#DB4437" />
+        <Text className="ml-3 text-lg font-medium text-gray-700">
+          {isSubmitting ? "Signing in..." : "Continue with Google"}
         </Text>
+      </TouchableOpacity>
 
-        <Text className="text-2xl font-bold text-center mb-6">Admin Login</Text>
+      {message ? (
+        <Text className="text-center text-red-500 mb-4">{message}</Text>
+      ) : null}
 
-        {/* Form */}
-        <View className="mx-2">
-          <Text className="mb-1 text-gray-600">Email</Text>
-          <TextInput
-            className="border border-gray-300 rounded-xl px-4 py-5 mb-4"
-            placeholder="Enter your email"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-
-          <Text className="mb-1 text-gray-600">Password</Text>
-          <View className="relative">
-            <TextInput
-              className="border color-black border-gray-300 rounded-xl px-4 py-5 pr-12 mb-2"
-              placeholder="Enter your password"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-              style={{
-                fontSize: 16, // Ensure font size is set
-                lineHeight: 22, // Optional: adjust to match font size
-                fontFamily: Platform.OS === "android" ? "monospace" : undefined, // Use a font that supports bullets
-              }}
-            />
-
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-5"
-            >
-              <Ionicons
-                name={showPassword ? "eye-off" : "eye"}
-                size={22}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      {/* Bottom Login + Register */}
-      <View className="px-6 pb-10 bg-white">
-        {/* <TouchableOpacity
-          onPress={login}
-          className="bg-blue-600 rounded-xl py-3 items-center mb-4"
-        >
-          <Text className="text-white text-lg font-semibold">Login</Text>
-        </TouchableOpacity> */}
-
-        <TouchableOpacity
-          onPress={handleLogin}
-          className="bg-blue-600 rounded-xl py-3 items-center mb-4"
-        >
-          <Text className="text-white text-lg font-semibold">
-            {loading ? "Logging in..." : "Login"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* <TouchableOpacity onPress={() => router.push("/register/register")}>
-          <Text className="text-center text-blue-600 font-medium">
-            Don’t have an account? Register
-          </Text>
-        </TouchableOpacity> */}
-      </View>
+      <TouchableOpacity onPress={() => router.push("/register/register")}>
+        <Text className="text-center text-blue-600 font-medium">
+          Don't have an account? Register
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
