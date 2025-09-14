@@ -5,12 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "communityapp1",
+    "scheme": "communityappadmin",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.almaash.communityapp1",
+      "bundleIdentifier": "com.almaash.communityappadmin",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -21,7 +21,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.almaash.communityapp1",
+      "package": "com.almaash.communityappadmin",
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -52,14 +52,14 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "9380a300-5ecd-496b-a587-97edd7a2a6f4"
-      },
       "googleSignInAndroidClientId": "483558689899-kvf06i7at3flhcc1oqlgv16a1f6bhpes.apps.googleusercontent.com",
       "googleSignIniOSClientId": "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-      "googleSignInWebClientId": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com"
+      "googleSignInWebClientId": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com",
+      "router": {},
+      "eas": {
+        "projectId": "90a7eecb-c6c3-418e-ac71-b6121c92f374"
+      }
     },
-    "owner": "kaushalspark"
+    "owner": "kaushalkantmis"
   }
 }
