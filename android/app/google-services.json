@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "483558689899",
+    "project_id": "community-app-33596",
+    "storage_bucket": "community-app-33596.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:483558689899:android:c7cbd138d665293e7a752e",
+        "android_client_info": {
+          "package_name": "com.almaash.communityappadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "483558689899-kvf06i7at3flhcc1oqlgv16a1f6bhpes.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.almaash.communityappadmin",
+            "certificate_hash": "babd4132feeaf8fd74009afd852eec34bcb7dad4"
+          }
+        },
+        {
+          "client_id": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWsFAsN7keRXS0axPL84MkyVXrcw0B2QA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "483558689899-orv1amuafr6umd8gv2skihhoups2oe59.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.almaash.communityappadmin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
