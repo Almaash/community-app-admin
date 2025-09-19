@@ -1,5 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useState } from "react";
+import React from "react";
 import {
   LayoutAnimation,
   Platform,
@@ -10,7 +10,6 @@ import {
   View,
 } from "react-native";
 
-// Enable LayoutAnimation for Android
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -18,12 +17,13 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const FILTERS = ["Name", "Location", "Service", "Product", "CBA ID"];
+type Props = {
+  search: string;
+  setSearch: (val: string) => void;
+};
 
-const CommunityFilter = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState("Name");
+const CommunityFilter = ({ search, setSearch }: Props) => {
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   const toggleExpand = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -38,7 +38,7 @@ const CommunityFilter = () => {
         onPress={toggleExpand}
       >
         <Text className="text-blue-800 text-lg font-semibold">
-          Filter Community
+          Search Community
         </Text>
         <FontAwesome
           name={isExpanded ? "chevron-up" : "chevron-down"}
@@ -47,45 +47,18 @@ const CommunityFilter = () => {
         />
       </TouchableOpacity>
 
-      {/* Expandable Filter Section */}
+      {/* Expandable Search Section */}
       {isExpanded && (
         <View className="px-4 pb-4">
-          {/* Search Bar */}
-          <View className="flex-row items-center border border-gray-300  px-3 py-1 mb-3 rounded-xl">
+          <View className="flex-row items-center border border-gray-300 px-3 py-1 mb-3 rounded-xl">
             <FontAwesome name="search" size={20} color="#9CA3AF" />
             <TextInput
-              placeholder="Search"
+              placeholder="Search by name"
               value={search}
               onChangeText={setSearch}
               className="ml-2 flex-1 text-gray-700"
               placeholderTextColor="#9CA3AF"
             />
-          </View>
-
-          {/* Filter Buttons */}
-          <View className="flex-row flex-wrap gap-2">
-            {FILTERS.map((filter) => {
-              const isActive = activeFilter === filter;
-              return (
-                <TouchableOpacity
-                  key={filter}
-                  onPress={() => setActiveFilter(filter)}
-                  className={`px-5 py-2 rounded-full border ${
-                    isActive
-                      ? "bg-blue-500 border-blue-500"
-                      : "bg-white border-blue-500"
-                  }`}
-                >
-                  <Text
-                    className={`text-sm font-medium ${
-                      isActive ? "text-white" : "text-blue-600"
-                    }`}
-                  >
-                    {filter}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
           </View>
         </View>
       )}

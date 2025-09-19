@@ -1,95 +1,148 @@
+import ProjectApiList from "@/app/api/ProjectApiList";
+import ApiService from "@/app/utils/axiosInterceptor";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
+  Image,
+  Modal,
   SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
 } from "react-native";
 
+const formatDateAndTime = (dateStr: string, timeStr: string) => {
+  // Parse human-readable date
+  const dateParts = new Date(dateStr);
+
+  if (isNaN(dateParts.getTime())) {
+    return `${dateStr} | ${timeStr}`; // fallback if parsing fails
+  }
+
+  // Parse 12-hour time string like "1:00 pm"
+  let [hoursMinutes, meridiem] = timeStr.toLowerCase().split(" ");
+  let [hours, minutes] = hoursMinutes.split(":").map(Number);
+
+  if (meridiem === "pm" && hours < 12) hours += 12;
+  if (meridiem === "am" && hours === 12) hours = 0;
+
+  dateParts.setHours(hours);
+  dateParts.setMinutes(minutes);
+
+  // Format date
+  const formattedDate = dateParts.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  // Format time in 12-hour
+  const formattedTime = dateParts.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${formattedDate} | ${formattedTime}`;
+};
+
 export default function EventScreen() {
-  const [upcommingEvent, setUpcommingEvent] = useState<any>(null);
+  const { api_getEventById, api_getEventRegistrations, api_postEventVerification } =
+    ProjectApiList();
+  const { id } = useLocalSearchParams(); // ✅ event ID from route
+
+  const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [newRegistrations, setNewRegistrations] = useState<any[]>([]);
-  const [verifiedRegistrations, setVerifiedRegistrations] = useState<any[]>([]);
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+
   const scrollY = useRef(new Animated.Value(0)).current;
-  const { id } = useLocalSearchParams();
-
-  const eventsMock = [
-    {
-      id: "1",
-      name: "Food Festival",
-      description: "Enjoy delicious food and drinks from top restaurants.",
-      date: "2025-08-20",
-      time: "18:00:00",
-      venue: "City Park",
-      bannerUrl:
-        "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=800&q=80",
-    },
-    {
-      id: "2",
-      name: "Music Concert",
-      description: "Live performance by popular artists and bands.",
-      date: "2025-08-25",
-      time: "19:00:00",
-      venue: "Downtown Arena",
-      bannerUrl:
-        "https://images.unsplash.com/photo-1518972559570-7cc1309f3229?w=800&q=80",
-    },
-  ];
-
-  const usersMock = [
-    { id: "u1", name: "Alice Johnson", code: "ALC12345XYZsss" },
-    { id: "u2", name: "Bob Smith", code: "BOB98765LMN" },
-    { id: "u3", name: "Charlie Brown", code: "CHR45678QWE" },
-  ];
-
-  const verifiedusers = [
-    { id: "u1", name: "Alice Johnson", code: "ALC12345XYZsss" },
-    { id: "u2", name: "Bob Smith", code: "BOB98765LMN" },
-    { id: "u3", name: "Charlie Brown", code: "CHR45678QWE" },
-  ];
-
   const imageScale = scrollY.interpolate({
     inputRange: [-100, 0, 150],
     outputRange: [1.2, 1, 1],
   });
 
-  const fetchUpcommingEventsData = async () => {
+  // ✅ Fetch event + registrations
+  const fetchEventData = async () => {
     setLoading(true);
     try {
-      const event = eventsMock.find((e) => e.id === id) || eventsMock[0];
-      setUpcommingEvent(event);
+      // 1. Get event details
+      const resEvent = await ApiService.get(`${api_getEventById}/${id}`);
+      if (resEvent?.data?.success) {
+        setEvent(resEvent.data.data);
+      }
 
-      // reset lists
-      setNewRegistrations(usersMock);
-      setVerifiedRegistrations([]);
+      // 2. Get registrations
+      const resRegs = await ApiService.get(
+        `${api_getEventRegistrations}/${id}/registrations`
+      );
+      if (resRegs?.data?.success) {
+        const regs = resRegs.data.data.registrations || [];
+
+        const mapped = regs.map((r: any, index: number) => ({
+          id: r.userId || `user-${index}`,
+          name: `${r.firstName ?? ""} ${r.lastName ?? ""}`.trim() || r.userId,
+          screenshot: r.paymentScreenshot,
+          status: r.verificationStatus, // pending / verified
+          registeredAt: r.registeredAt?._seconds
+            ? new Date(r.registeredAt._seconds * 1000).toLocaleString()
+            : null,
+        }));
+
+        setRegistrations(mapped);
+      }
     } catch (err) {
-      console.error("❌ Failed to fetch event", err);
+      console.error("❌ Failed to fetch event or registrations", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUpcommingEventsData();
-  }, []);
+    if (id) fetchEventData();
+  }, [id]);
 
-  // ✅ move user from new → verified
-  const handleVerifyUser = (user: any) => {
-    setNewRegistrations((prev) => prev.filter((u) => u.id !== user.id));
-    setVerifiedRegistrations((prev) => [...prev, user]);
+  // ✅ Handle verification
+  const handleVerifyUser = async (user: any) => {
+    try {
+      await ApiService.post(`${api_postEventVerification}/${id}/${user.id}`, {
+        status: "verified",
+      });
+
+      // update local state
+      setRegistrations((prev) =>
+        prev.map((u) =>
+          u.id === user.id ? { ...u, status: "verified" } : u
+        )
+      );
+
+      setSelectedUser(null); // close modal
+    } catch (error) {
+      console.error("❌ Verification failed", error);
+      Alert.alert("Error", "Failed to verify user.");
+    }
   };
 
+  // ✅ Loading state
   if (loading) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator size="large" color="#3B82F6" />
         <Text className="mt-2 text-gray-500 text-lg">Loading event...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // ✅ No event found
+  if (!event) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <Text className="text-gray-500 text-lg">No event found</Text>
       </SafeAreaView>
     );
   }
@@ -101,7 +154,7 @@ export default function EventScreen() {
       {/* Banner */}
       <Animated.View style={{ height: 250, overflow: "hidden" }}>
         <Animated.Image
-          source={{ uri: upcommingEvent?.bannerUrl }}
+          source={{ uri: event.bannerUrl }}
           style={{
             width: "100%",
             height: "100%",
@@ -125,95 +178,103 @@ export default function EventScreen() {
           paddingTop: 10,
         }}
       >
-        <Text className="text-2xl font-bold mb-1">{upcommingEvent?.name}</Text>
+        {/* Event title */}
+        <Text className="text-2xl font-bold mb-1">{event.name}</Text>
 
+        {/* Event date, time, venue */}
         <Text className="text-gray-700 text-lg mb-4">
-          {new Date(upcommingEvent?.date).toLocaleDateString("en-IN", {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}{" "}
-          |{" "}
-          {new Date(`1970-01-01T${upcommingEvent?.time}`).toLocaleTimeString(
-            "en-US",
-            { hour: "numeric", minute: "2-digit", hour12: true }
-          )}{" "}
-          | {upcommingEvent?.venue}
+          {formatDateAndTime(event.date, event.time)} | {event.venue}
         </Text>
 
+        {/* Description */}
         <Text className="text-lg font-semibold mb-1">Description</Text>
         <Text className="text-gray-600 text-base mb-6 leading-relaxed">
-          {upcommingEvent?.description}
+          {event.description}
         </Text>
 
-        {/* ✅ Users Registered Section */}
-        <View className="bg-white rounded-lg shadow px-3 py-4">
-          <Text className="text-lg font-semibold mb-3">
-            Users Registered for Event
+        {/* Registrations */}
+        <View className="bg-white p-4 rounded-lg shadow-sm">
+          <Text className="text-lg font-bold mb-3">
+            Users Registered ({registrations.length})
           </Text>
 
-          {/* New Registration */}
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-base font-semibold">New Registration</Text>
-            <View className="bg-blue-500 rounded-full px-3 py-1">
-              <Text className="text-white text-base font-semibold">
-                {newRegistrations.length}
-              </Text>
-            </View>
-          </View>
-
-          {newRegistrations.map((user) => (
+          {registrations.map((user) => (
             <TouchableOpacity
               key={user.id}
-              className="flex-row items-center bg-gray-50 rounded-lg p-3 mb-2"
-              onPress={() =>
-                router.push({
-                  pathname: "/pages/eventsApproval/components/[id]",
-                  params: {
-                    userId: user.id,
-                    name: user.name,
-                    code: user.code,
-                  },
-                })
-              }
+              onPress={() => setSelectedUser(user)}
+              className="flex-row items-center justify-between border-b border-gray-200 py-3"
             >
-              <View className="w-12 h-12 rounded-full bg-gray-300 mr-3" />
-              <View className="flex-1">
+              {/* User info */}
+              <View className="flex-1 mr-3">
                 <Text className="font-semibold text-base">{user.name}</Text>
-                <Text className="text-gray-500 text-sm">{user.code}</Text>
+                <Text className="text-gray-500 text-sm">
+                  {user.registeredAt || "No date"}
+                </Text>
+                <Text
+                  className={`text-sm font-medium ${
+                    user.status === "verified"
+                      ? "text-green-600"
+                      : "text-yellow-600"
+                  }`}
+                >
+                  {user.status}
+                </Text>
               </View>
-              <View className="w-9 h-9 bg-gray-300 rounded-md" />
+
+              {/* Screenshot */}
+              {user.screenshot ? (
+                <Image
+                  source={{ uri: user.screenshot }}
+                  style={{ width: 48, height: 48, borderRadius: 6 }}
+                />
+              ) : (
+                <View className="w-12 h-12 bg-gray-200 rounded-md" />
+              )}
             </TouchableOpacity>
-          ))}
-
-          {/* Verified Registration */}
-          <View className="flex-row justify-between items-center mt-4 mb-2">
-            <Text className="text-base font-semibold">
-              Verified Registration
-            </Text>
-            <View className="bg-blue-500 rounded-full px-3 py-1">
-              <Text className="text-white text-base font-semibold">
-                {verifiedRegistrations.length}
-              </Text>
-            </View>
-          </View>
-
-          {verifiedusers.map((user) => (
-            <View
-              key={user.id}
-              className="flex-row items-center bg-gray-50 rounded-lg p-3 mb-2"
-            >
-              <View className="w-12 h-12 rounded-full bg-gray-300 mr-3" />
-              <View className="flex-1">
-                <Text className="font-semibold text-base">{user.name}</Text>
-                <Text className="text-gray-500 text-sm">{user.code}</Text>
-              </View>
-              <View className="w-9 h-9 bg-gray-300 rounded-md" />
-            </View>
           ))}
         </View>
       </ScrollView>
+
+      {/* Modal for screenshot + verify */}
+      <Modal visible={!!selectedUser} transparent animationType="slide">
+        <View className="flex-1 bg-black/70 justify-center items-center px-6">
+          <View className="bg-white rounded-lg p-4 w-full max-w-md">
+            {selectedUser?.screenshot ? (
+              <Image
+                source={{ uri: selectedUser.screenshot }}
+                style={{ width: "100%", height: 300, borderRadius: 8 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <View className="w-full h-48 bg-gray-200 rounded-md items-center justify-center">
+                <Text>No Screenshot</Text>
+              </View>
+            )}
+
+            <Text className="text-lg font-semibold mt-4 mb-2 text-center">
+              {selectedUser?.name}
+            </Text>
+
+            <View className="flex-row justify-around mt-3">
+              <TouchableOpacity
+                onPress={() => setSelectedUser(null)}
+                className="bg-gray-300 px-4 py-2 rounded-lg"
+              >
+                <Text>Close</Text>
+              </TouchableOpacity>
+
+              {selectedUser?.status === "pending" && (
+                <TouchableOpacity
+                  onPress={() => handleVerifyUser(selectedUser)}
+                  className="bg-green-500 px-4 py-2 rounded-lg"
+                >
+                  <Text className="text-white">Verify</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

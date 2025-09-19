@@ -9,7 +9,6 @@ type Event = {
   date: string;
   time: string;
   bannerUrl: string;
-  title: string;
 };
 
 interface Props {
@@ -22,7 +21,12 @@ const EventList: React.FC<Props> = ({ events }) => {
       {events.map((event) => (
         <View key={event.id} className="w-[48%] mb-4">
           <TouchableOpacity
-            onPress={() => router.push(`/pages/eventsApproval/${event.id}`)}
+            onPress={() =>
+              router.push({
+                pathname: "/pages/eventsApproval/[id]",
+                params: { id: event.id }, // ✅ send event ID here
+              })
+            }
           >
             <EventCard
               date={event.date}

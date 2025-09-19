@@ -37,7 +37,7 @@ export default function LoginForm() {
           try {
             const apiResponse = await axios.post(api_Login, { idToken });
             const { token, user: userData } = apiResponse.data.data || {};
-            console.log(token, "token====================>")
+            // console.log(token, "token====================>")
             await AsyncStorage.setItem("userData", JSON.stringify(userData));
             await AsyncStorage.setItem("token", token);
             login();
@@ -83,6 +83,7 @@ export default function LoginForm() {
       </View>
 
       <Text className="text-4xl font-bold text-center mb-4">Welcome Back</Text>
+      <Text className="text-4xl font-bold text-center mb-4">Admin</Text>
       <Text className="text-sm text-gray-500 text-center mb-12 px-8">
         Sign in with your Google account to continue
       </Text>

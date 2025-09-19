@@ -3,148 +3,159 @@ import {
   View,
   Text,
   ScrollView,
-  Dimensions,
   Image,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import Header from "@/app/components/Header";
 import ProjectApiList from "@/app/api/ProjectApiList";
-import api from "@/app/utils/axiosInterceptor";
+import ApiService from "@/app/utils/axiosInterceptor";
 
 type Product = {
-  id: number;
+  id: string;
   name: string;
   description: string;
   mrp: number;
   discount?: number;
   imageUrl: string;
+  isApproved: boolean;
+  createdAt: { _seconds: number; _nanoseconds: number };
 };
 
-const screenWidth = Dimensions.get("window").width;
-
 const ListedProducts = () => {
-  const { type, id } = useLocalSearchParams();
   const router = useRouter();
-  const { api_getProduct, api_getOthersProduct } = ProjectApiList();
+  const { api_getAdminProducts } = ProjectApiList();
+  const [activeTab, setActiveTab] = useState<"" | "rejected" | "approved">("");
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const fetchProducts = async () => {
-    if (!type) return;
+  // Fetch products from API
+  const fetchProducts = async (status: string) => {
+    setLoading(true);
     try {
-      const apiUrl =
-        type === "other" ? `${api_getOthersProduct}/${id}` : api_getProduct;
-
-      const res = await api.get(apiUrl);
-      const raw = res.data?.data || [];
-
-      const formatted = raw.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        mrp: item.mrp,
-        discount: item.discount,
-        imageUrl: item.imageUrl || "https://via.placeholder.com/150",
-      }));
-
-      setProducts(formatted);
+      const res = await ApiService.get(`${api_getAdminProducts}?status=${status}`);
+      if (res?.data?.success) {
+        setProducts(res.data.products);
+      } else {
+        setProducts([]);
+      }
     } catch (error) {
-      console.error("❌ Error loading products:", error);
+      console.error("Failed to fetch products:", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch products when activeTab changes
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(activeTab);
+  }, [activeTab]);
 
   return (
-    <>
-      <View className="mx-5 mb-2 flex-row justify-between items-center">
-        <View>
-          <Text className="text-black mb-1 text-2xl font-bold">
-            Listed Products
+    <View className="flex-1 bg-white px-5 pt-8">
+      <Header />
+
+      {/* Title */}
+      <Text className="text-2xl font-bold text-black mb-6 pl-2">
+        Product Control
+      </Text>
+
+      {/* Tabs */}
+      <View className="flex-row gap-1 mb-8">
+        <TouchableOpacity
+          className={`px-2 py-3 rounded-full border ${activeTab === "" ? "bg-blue-600 border-blue-600" : "border-blue-600"
+            }`}
+          onPress={() => setActiveTab("")}
+        >
+          <Text
+            className={`text-base font-semibold ${activeTab === "" ? "text-white" : "text-blue-600"
+              }`}
+          >
+            New Products
           </Text>
-          <View className="flex-row items-center space-x-1 mb-1">
-            <Text className="text-gray-500 text-sm">
-              {products.length} Products
-            </Text>
-            <Ionicons name="cube" size={16} color="#666" />
-          </View>
-        </View>
-        {type != "other" && (
-          <Ionicons
-            name="add-circle"
-            size={45}
-            color="#0066ff"
-            onPress={() =>
-              router.push("/pages/products/components/AddProductScreen")
-            }
-          />
-        )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className={`px-2 py-3 rounded-full border ${activeTab === "approved" ? "bg-blue-600 border-blue-600" : "border-blue-600"
+            }`}
+          onPress={() => setActiveTab("approved")}
+        >
+          <Text
+            className={`text-base font-semibold ${activeTab === "approved" ? "text-white" : "text-blue-600"
+              }`}
+          >
+            Approved Products
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className={`px-6 py-3 rounded-full border ${activeTab === "rejected" ? "bg-blue-600 border-blue-600" : "border-blue-600"
+            }`}
+          onPress={() => setActiveTab("rejected")}
+        >
+          <Text
+            className={`text-base font-semibold ${activeTab === "rejected" ? "text-white" : "text-blue-600"
+              }`}
+          >
+            Rejected Products
+          </Text>
+        </TouchableOpacity>
       </View>
 
+      {/* Product List */}
       {loading ? (
-        <View className="items-center justify-center mt-10">
-          <ActivityIndicator size="large" color="#0066ff" />
-          <Text className="text-gray-500 mt-2">Loading products...</Text>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#3B82F6" />
         </View>
       ) : (
         <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 70 }}
         >
-          <View className="flex-row gap-3">
-            {products.map((product) => (
-              <View
-                key={product.id}
-                style={{ width: screenWidth / 2 - 24 }}
-                className="bg-white border border-gray-200 rounded-lg p-3"
-              >
-                <Image
-                  source={{ uri: product.imageUrl }}
-                  className="w-full h-24 rounded mb-3"
-                  resizeMode="cover"
-                />
-                <Text className="font-medium text-black mb-1">
-                  {product.name}
-                </Text>
-                <Text className="text-xs text-gray-500 mb-2" numberOfLines={2}>
-                  {product.description}
-                </Text>
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Text className="font-bold text-black">₹{product.mrp}</Text>
-                  {product.discount && (
-                    <View className="bg-green-100 px-2 py-1 rounded">
-                      <Text className="text-green-700 text-xs font-medium">
-                        {product.discount}% OFF
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: "/pages/products/components/[id]",
-                      params: { id: product.id.toString() },
-                    })
-                  }
-                  className="bg-green-600 py-2 rounded"
-                >
-                  <Text className="text-white text-center font-medium text-sm">
-                    View
+          {products.map((product) => (
+            <TouchableOpacity
+              key={product.id}
+              className="flex-row items-center justify-between mb-7"
+              onPress={() =>
+                router.push({
+                  pathname: `/pages/products/components/[id]`,
+                  params: { id: product.id }, // ✅ send productId
+                })
+              }
+
+            >
+              {/* Left Side */}
+              <View className="flex-row items-start gap-4 flex-1">
+                <View className="w-12 h-12 rounded-full bg-gray-300" />
+                <View className="flex-1">
+                  <Text className="font-bold text-black text-lg">{product.name}</Text>
+                  <Text className="text-gray-600 text-sm" numberOfLines={2}>
+                    {product.description}
                   </Text>
-                </TouchableOpacity>
+                  <Text className="text-gray-400 text-sm mt-2">
+                    {new Date(product.createdAt._seconds * 1000).toLocaleString()}
+                  </Text>
+                </View>
               </View>
-            ))}
-          </View>
+
+              {/* Right Side */}
+              <Image
+                source={{ uri: product.imageUrl }}
+                className="w-16 h-16 rounded-xl bg-gray-300"
+              />
+            </TouchableOpacity>
+          ))}
+
+          {products.length === 0 && (
+            <View className="items-center mt-20">
+              <Text className="text-gray-500 text-lg">No products found.</Text>
+            </View>
+          )}
         </ScrollView>
       )}
-    </>
+    </View>
   );
 };
 

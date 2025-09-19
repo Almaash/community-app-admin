@@ -3,11 +3,16 @@ import Header from "@/app/components/Header";
 import ApiService from "@/app/utils/axiosInterceptor";
 import { Stack } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+  RefreshControl,
+} from "react-native";
 import CommunityFilter from "./components/CommunityFilter";
 import ProfileCard from "./components/ProfileCard";
 import { useFocusEffect } from "@react-navigation/native";
-import { RefreshControl } from "react-native";
 
 interface UserType {
   firstName: string;
@@ -23,24 +28,18 @@ const CommunityScreen = () => {
   const [userList, setUserList] = useState<UserType[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     const fetchUserData = async () => {
-  //       try {
-  //         const res = await ApiService.get(api_getAllUser);
-  //         setUserList(res?.data?.data || []);
-  //       } catch (err) {
-  //         console.error("Error fetching user data:", err);
-  //       }
-  //     };
-
-  //     fetchUserData();
-  //   }, [api_getAllUser])
-  // );
+  // 🔎 search state
+  const [search, setSearch] = useState("");
 
   const fetchUserData = async () => {
     try {
-      const res = await ApiService.get(api_getAllUser);
+      let url = api_getAllUser;
+      if (search) {
+        // append query param correctly
+        url += `?name=${encodeURIComponent(search)}`;
+      }
+
+      const res = await ApiService.get(url);
       setUserList(res?.data?.data || []);
     } catch (err) {
       console.error("Error fetching user data:", err);
@@ -56,7 +55,7 @@ const CommunityScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchUserData();
-    }, [api_getAllUser])
+    }, [api_getAllUser, search])
   );
 
   return (
@@ -64,8 +63,8 @@ const CommunityScreen = () => {
       <Stack.Screen options={{ headerShown: false }} />
       <Header />
 
-      {/* Filter */}
-      <CommunityFilter />
+      {/* Search Filter */}
+      <CommunityFilter search={search} setSearch={setSearch} />
 
       <ScrollView
         className="flex-1"
@@ -77,8 +76,8 @@ const CommunityScreen = () => {
         {/* Description */}
         <View className="px-4 py-5 bg-white border-b border-gray-200">
           <Text className="text-gray-700 text-base leading-6">
-            Connect with top contributors in the community. Filter and message
-            to collaborate.
+            Connect with top contributors in the community. Use the search box
+            to find users.
           </Text>
         </View>
 
