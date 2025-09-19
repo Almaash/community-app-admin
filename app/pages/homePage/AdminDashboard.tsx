@@ -5,22 +5,111 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/app/context/AuthContext";
+import ApiService from "@/app/utils/axiosInterceptor";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import ProjectApiList from "@/app/api/ProjectApiList";
+
 
 const AdminDashboard = () => {
   const router = useRouter();
+  const { logout } = useAuth();
+  const { api_getAdminDashboard } =
+    ProjectApiList();
+
+  const [counts, setCounts] = useState({
+    pendingFeeds: 0,
+    pendingEventRegistrations: 0,
+    pendingUsers: 0,
+    pendingProducts: 0,
+    totalUsers: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+const handleLogout = () => {
+  const router = useRouter();
+
+  Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
+    { text: "Cancel", style: "cancel" },
+    {
+      text: "Logout",
+      style: "destructive",
+      onPress: async () => {
+        try {
+          // Clear local storage
+          await AsyncStorage.removeItem("userData");
+          await AsyncStorage.removeItem("token");
+
+          // Sign out from Google if logged in
+          try {
+            await GoogleSignin.signOut();
+          } catch (error) {
+            console.log("Google Signout Error:", error);
+          }
+
+          // Your app logout logic
+          logout();
+
+          // Redirect to login
+          router.replace("/login");
+        } catch (err) {
+          console.log("Logout Error:", err);
+        }
+      },
+    },
+  ]);
+};
+
+  const fetchDashboardCounts = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+
+      const res = await ApiService.get(
+        api_getAdminDashboard,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.success && res.data.data) {
+        setCounts(res.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard counts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardCounts();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#000" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* <ScrollView className="flex-1"> */}
       {/* Header Section */}
       <View className="bg-black rounded-b-3xl pb-6">
         <Text className="text-white text-xs text-center pt-2">
@@ -30,7 +119,7 @@ const AdminDashboard = () => {
           Admin Control Dashboard
         </Text>
 
-        {/* Illustration (Icon instead of Image) */}
+        {/* Illustration */}
         <View className="w-36 h-36 rounded-full bg-gray-700 self-center mt-4 items-center justify-center">
           <Ionicons name="person-circle" size={100} color="white" />
         </View>
@@ -46,7 +135,7 @@ const AdminDashboard = () => {
           <Text className="text-lg font-semibold mt-2">Feed Section</Text>
           <Text className="text-gray-500 text-sm">Manage Post & Feeds</Text>
           <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
-            5 New
+            {counts.pendingFeeds} New
           </Text>
         </TouchableOpacity>
 
@@ -58,7 +147,7 @@ const AdminDashboard = () => {
           <Text className="text-lg font-semibold mt-2">Events</Text>
           <Text className="text-gray-500 text-sm">Payment & Attendance</Text>
           <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
-            5 New
+            {counts.pendingEventRegistrations} New
           </Text>
         </TouchableOpacity>
       </View>
@@ -77,17 +166,20 @@ const AdminDashboard = () => {
               New User
             </Text>
             <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
-              5 New
+              {counts.pendingUsers} New
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="bg-gray-100 shadow p-4 rounded-2xl items-center w-[30%]">
+          <TouchableOpacity
+            onPress={() => router.push(`/pages/products/ListedProducts`)}
+            className="bg-gray-100 shadow p-4 rounded-2xl items-center w-[30%]"
+          >
             <Feather name="box" size={30} color="#4088E3" />
             <Text className="text-gray-800 text-sm font-semibold mt-2">
               Products
             </Text>
             <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
-              18 New
+              {counts.pendingProducts} New
             </Text>
           </TouchableOpacity>
 
@@ -100,15 +192,15 @@ const AdminDashboard = () => {
               Accounts
             </Text>
             <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
-              11 New
+              {counts.totalUsers} Total
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Messaging Section */}
-      <View className="mt-8 px-4">
-        <TouchableOpacity className="bg-white shadow p-4 rounded-2xl flex-row justify-between items-center">
+      <View className="mt-8 px-4 flex-1">
+        {/* <TouchableOpacity className="bg-white shadow p-4 rounded-2xl flex-row justify-between items-center">
           <View className="flex-1 pr-4">
             <Text className="text-lg font-semibold">Messaging</Text>
             <Text className="text-gray-500 text-sm mt-1">
@@ -123,11 +215,19 @@ const AdminDashboard = () => {
             size={30}
             color="#4088E3"
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
-      <View className="h-10" />
-      {/* </ScrollView> */}
+      {/* Logout at Bottom */}
+      <View className="px-4 pb-6">
+        <TouchableOpacity
+          onPress={handleLogout}
+          className="bg-blue-500 py-3 rounded-2xl flex-row justify-center items-center"
+        >
+          <Feather name="log-out" size={20} color="white" />
+          <Text className="ml-2 text-white font-semibold text-lg">Logout</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };

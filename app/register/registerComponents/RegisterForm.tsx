@@ -1,58 +1,49 @@
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Checkbox from "expo-checkbox";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-  ScrollView,
+  View,
   Text,
   TextInput,
-  TextInputProps,
   TouchableOpacity,
-  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 
-export default function RegisterForm() {
+const Register1 = () => {
   const router = useRouter();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setphoneNumber] = useState("");
-  const [fatherName, setFatherName] = useState("");
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [city, setCity] = useState("Ranchi");
-  const [wardNumber, setwardNumber] = useState("21");
-  const [caste, setCaste] = useState("Kayastha");
-  const [agree, setAgree] = useState(false);
-
-  // Dropdown for state
-  const [open, setOpen] = useState(false);
-  const [stateValue, setStateValue] = useState(null);
-  const [states, setStates] = useState([
-    { label: "Jharkhand", value: "jharkhand" },
-    { label: "Bihar", value: "bihar" },
-    { label: "UP", value: "up" },
-  ]);
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [fatherName, setFatherName] = useState("");
+  const [stateValue, setStateValue] = useState("");
+  const [city, setCity] = useState("");
+  const [wardNumber, setWardNumber] = useState("");
+  const [caste, setCaste] = useState("");
 
   const handleNext = async () => {
+    if (!firstName || !username || !email || !phoneNumber) {
+      Alert.alert("Error", "Please fill all required fields.");
+      return;
+    }
+
     const formData = {
       firstName,
       lastName,
-      fatherName,
+      username,
       email,
       phoneNumber,
-      username,
-      password,
+      fatherName,
       state: stateValue,
       city,
       wardNumber,
       caste,
-      agree,
-      role: "business"
+      role: "business",
     };
 
     try {
@@ -63,159 +54,63 @@ export default function RegisterForm() {
     }
   };
 
+  const fields = [
+    { label: "First Name *", placeholder: "First Name", value: firstName, setter: setFirstName },
+    { label: "Last Name", placeholder: "Last Name", value: lastName, setter: setLastName },
+    { label: "Username *", placeholder: "Username", value: username, setter: setUsername },
+    { label: "Email *", placeholder: "Email", value: email, setter: setEmail },
+    { label: "Phone Number *", placeholder: "Phone Number", value: phoneNumber, setter: setPhoneNumber },
+    { label: "Father's Name", placeholder: "Father's Name", value: fatherName, setter: setFatherName },
+    { label: "State", placeholder: "State", value: stateValue, setter: setStateValue },
+    { label: "City", placeholder: "City", value: city, setter: setCity },
+    { label: "Ward Number", placeholder: "Ward Number", value: wardNumber, setter: setWardNumber },
+    { label: "Caste", placeholder: "Caste", value: caste, setter: setCaste },
+  ];
+
   return (
-    <ScrollView>
-      <View className="flex-1 bg-white px-4 pt-10">
-        <Text className="text-3xl font-bold text-center mb-1">Welcome</Text>
-        <Text className="text-sm text-gray-500 text-center mb-5 px-2">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quam duis
-          vitae curabitur amet, fermentum lorem.
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      className="flex-1 bg-white"
+    >
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          paddingHorizontal: 20,
+          paddingVertical: 30,
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text className="text-2xl font-bold text-center mb-8 text-gray-800">
+           Personal Details
         </Text>
 
-        {/* Form */}
-        <View className="gap-2 mx-2">
-          <Field
-            label="First name *"
-            value={firstName}
-            onChangeText={setFirstName}
-            placeholder="Your name"
-          />
-          <Field
-            label="Last name *"
-            value={lastName}
-            onChangeText={setLastName}
-            placeholder="Your name"
-          />
-          <Field
-            label="Father’s Name *"
-            value={fatherName}
-            onChangeText={setFatherName}
-            placeholder="Your father name"
-          />
-          <Field
-            label="Create Username *"
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Username"
-          />
-          <Field
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Email"
-          />
-          <Field
-            label="Phone Number"
-            value={phoneNumber}
-            onChangeText={setphoneNumber}
-            placeholder="phoneNumber"
-          />
-
-          <Text className="text-sm text-gray-600">Password *</Text>
-          <View className="flex-row items-center border border-gray-300 rounded-lg px-3 py-1">
+        {/* Input fields with labels */}
+        {fields.map((field, index) => (
+          <View key={index} className="mb-4 w-full">
+            <Text className="text-gray-700 mb-1">{field.label}</Text>
             <TextInput
-              className="flex-1 py-2 text-sm color-black"
-              placeholder="Password"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
+              placeholder={field.placeholder}
+              value={field.value}
+              onChangeText={field.setter}
+              className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+              placeholderTextColor="#9CA3AF"
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Ionicons
-                name={showPassword ? "eye-off" : "eye"}
-                size={18}
-                color="#666"
-              />
-            </TouchableOpacity>
           </View>
+        ))}
 
-          <Text className="text-sm text-gray-600">State</Text>
-          <DropDownPicker
-            open={open}
-            value={stateValue}
-            items={states}
-            setOpen={setOpen}
-            setValue={setStateValue}
-            setItems={setStates}
-            placeholder="Select State"
-            style={{
-              marginBottom: 12,
-              zIndex: 1000,
-              borderColor: "#d1d5db",
-              borderRadius: 8,
-              paddingHorizontal: 10,
-              height: 40,
-            }}
-            textStyle={{ fontSize: 14 }}
-            dropDownContainerStyle={{
-              zIndex: 999,
-              borderColor: "#d1d5db",
-            }}
-          />
-
-          <View className="flex-row gap-2">
-            <View className="flex-1">
-              <Field label="City" value={city} onChangeText={setCity} />
-            </View>
-            <View className="flex-1">
-              <Field
-                label="Ward | Local No"
-                value={wardNumber}
-                onChangeText={setwardNumber}
-              />
-            </View>
-          </View>
-
-          <Field label="Caste" value={caste} onChangeText={setCaste} />
-
-          <View className="flex-row items-start gap-2 mt-10">
-            <Checkbox
-              value={agree}
-              onValueChange={setAgree}
-              color={agree ? "#2563EB" : undefined}
-            />
-            <Text className="text-xs text-gray-600 flex-1 leading-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.{" "}
-              <Text className="font-semibold">Gravida eget ultricies</Text>{" "}
-              pharetra scelerisque duis cursus.
-            </Text>
-          </View>
-        </View>
-
+        {/* Button */}
         <TouchableOpacity
           onPress={handleNext}
-          className="bg-blue-600 rounded-lg py-4 items-center mt-5 mb-10"
+          className="bg-blue-600 py-3 rounded-lg mt-2"
         >
-          <Text className="text-white text-base font-semibold">Next Page</Text>
+          <Text className="text-white text-center font-semibold text-lg">
+            Next
+          </Text>
         </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
-}
+};
 
-// Reusable input field
-function Field({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  ...rest
-}: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-} & TextInputProps) {
-  return (
-    <View>
-      <Text className="text-sm text-gray-600 mb-0.5">{label}</Text>
-      <TextInput
-        className="border border-gray-300 rounded-lg px-3 py-3 text-sm"
-        placeholder={placeholder}
-        value={value}
-        onChangeText={onChangeText}
-        {...rest}
-      />
-    </View>
-  );
-}
+export default Register1;

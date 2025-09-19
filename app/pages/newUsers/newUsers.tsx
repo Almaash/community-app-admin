@@ -1,27 +1,59 @@
-import { View, Text, TextInput, FlatList, TouchableOpacity } from "react-native";
-import { Stack, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ProjectApiList from "@/app/api/ProjectApiList";
 import { Ionicons } from "@expo/vector-icons";
-
-const users = [
-  {
-    id: "1",
-    name: "Profile Name 1",
-    business: "Business Name 1",
-    category: "Business Category 1",
-    image: "https://via.placeholder.com/100",
-  },
-  {
-    id: "2",
-    name: "Profile Name 2",
-    business: "Business Name 2",
-    category: "Business Category 2",
-    image: "https://via.placeholder.com/100",
-  },
-];
+import { Stack, useRouter } from "expo-router";
+import React, { useState, useCallback } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native"; // ✅ Import
 
 export default function Tab() {
   const router = useRouter();
+  const { api_getNewUserData } = ProjectApiList();
+
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  // ✅ Fetch users function
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(api_getNewUserData);
+      const data = await res.json();
+
+      if (Array.isArray(data?.data)) {
+        setUsers(data.data);
+      } else {
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Refresh API every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsers();
+    }, [])
+  );
+
+  const filteredUsers = users.filter((user) =>
+    `${user?.firstName || ""} ${user?.lastName || ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -30,7 +62,12 @@ export default function Tab() {
       {/* Search Bar */}
       <View className="flex-row items-center bg-gray-100 rounded-xl mx-4 mt-4 px-3 py-2">
         <Ionicons name="search" size={20} color="gray" />
-        <TextInput placeholder="Search" className="flex-1 ml-2 text-base" />
+        <TextInput
+          placeholder="Search"
+          className="flex-1 ml-2 text-base"
+          value={search}
+          onChangeText={setSearch}
+        />
         <Ionicons name="chatbubble-ellipses-outline" size={22} color="gray" />
       </View>
 
@@ -39,34 +76,59 @@ export default function Tab() {
         New User Registration
       </Text>
 
-      {/* User List */}
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
-            {/* Avatar + Info */}
-            <View className="flex-row items-center">
-              <View className="w-12 h-12 rounded-full bg-gray-300 mr-3" />
-              <View>
-                <Text className="font-semibold">{item.name}</Text>
-                <Text className="text-sm text-gray-600">{item.business}</Text>
-                <Text className="text-sm text-gray-600">{item.category}</Text>
-              </View>
-            </View>
+      {/* Loading State */}
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" className="mt-10" />
+      ) : (
+        <FlatList
+          data={filteredUsers}
+          keyExtractor={(item, index) =>
+            item?.id ? item.id.toString() : index.toString()
+          }
+          renderItem={({ item }) => (
+            <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
+              {/* Avatar + Info */}
+              <View className="flex-row items-center">
+                {item?.ownerImage ? (
+                  <Image
+                    source={{ uri: item.ownerImage }}
+                    className="w-12 h-12 rounded-full mr-3"
+                  />
+                ) : (
+                  <View className="w-12 h-12 rounded-full bg-gray-300 mr-3" />
+                )}
 
-            {/* Button */}
-            <TouchableOpacity
-              className="bg-blue-600 px-3 py-2 rounded"
-              onPress={() => router.push(`/pages/newUsers/${item?.id}`)}
-            >
-              <Text className="text-white text-sm font-medium">
-                View Details
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+                <View>
+                  <Text className="font-semibold">
+                    {item?.firstName} {item?.lastName}
+                  </Text>
+                  <Text className="text-sm text-gray-600">
+                    {item?.businessName || "N/A"}
+                  </Text>
+                  <Text className="text-sm text-gray-600">
+                    {item?.businessCategory || "N/A"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Button */}
+              <TouchableOpacity
+                className="bg-blue-600 px-3 py-2 rounded"
+                onPress={() => router.push(`/pages/newUsers/${item?.id}`)}
+              >
+                <Text className="text-white text-sm font-medium">
+                  View Details
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          ListEmptyComponent={
+            <Text className="text-center text-gray-500 mt-10">
+              No users found
+            </Text>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }

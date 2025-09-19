@@ -1,58 +1,55 @@
-import React, { useState } from "react";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import ProjectApiList from "@/app/api/ProjectApiList";
 import Header from "@/app/components/Header";
-import { Stack } from "expo-router";
+import ApiService from "@/app/utils/axiosInterceptor";
+import { Ionicons } from "@expo/vector-icons";
+import { router, Stack } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import CompletedEventList from "./components/CompletedEventList";
 import EventList from "./components/EventList";
 import TabButton from "./components/TabButton";
-
-// Import static JSON
-// import eventsData from "./events.json";
+import { CloudCog } from "lucide-react-native";
+// import uploadApi from "@/app/utils/uploadApi"; // 👈 use your interceptor instance
 
 export default function EventScreen() {
-  const [activeTab, setActiveTab] = useState("upcoming");
+  const [activeTab, setActiveTab] = useState<"upcomming" | "completed">(
+    "upcomming"
+  );
+  const { api_getEventListings } = ProjectApiList();
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const eventsData = {
-    upcoming: [
-      {
-        id: "1",
-        name: "Tech Conference 2025",
-        date: "2025-09-01",
-        time: "10:00 AM",
-        bannerUrl:
-          "https://via.placeholder.com/400x200.png?text=Tech+Conference",
-        title: "Future of AI",
-      },
-      {
-        id: "2",
-        name: "Startup Meetup",
-        date: "2025-09-05",
-        time: "6:00 PM",
-        bannerUrl:
-          "https://via.placeholder.com/400x200.png?text=Startup+Meetup",
-        title: "Networking Night",
-      },
-    ],
-    completed: [
-      {
-        id: "3",
-        name: "Blockchain Workshop",
-        date: "2025-08-10",
-        time: "2:00 PM",
-        bannerUrl: "https://via.placeholder.com/400x200.png?text=Blockchain",
-        title: "Crypto Basics",
-      },
-      {
-        id: "4",
-        name: "Design Thinking",
-        date: "2025-08-01",
-        time: "4:00 PM",
-        bannerUrl:
-          "https://via.placeholder.com/400x200.png?text=Design+Thinking",
-        title: "Innovation Workshop",
-      },
-    ],
+  // 🔹 Fetch events based on active tab
+  const fetchEvents = async (type: "upcomming" | "completed") => {
+    try {
+      setLoading(true);
+      const res = await ApiService.get(`${api_getEventListings}?type=${type}`);
+      // console.log(res.data,"res.data====================>")
+    if (type === "upcomming") {
+      setEvents(res.data?.upcoming || []);
+    } else {
+      setEvents(res.data?.completed || []);
+    }    } catch (error) {
+      console.log("Error fetching events:", error);
+      setEvents([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+
+
+  // console.log(events)
+  useEffect(() => {
+    fetchEvents(activeTab);
+  }, [activeTab]);
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -62,7 +59,7 @@ export default function EventScreen() {
       {/* Tabs */}
       <View className="px-4 pt-4 pb-6">
         <Text className="text-xl font-semibold text-gray-900 mb-6">
-          Notifications
+          Events
         </Text>
         <ScrollView
           horizontal
@@ -71,25 +68,36 @@ export default function EventScreen() {
         >
           <TabButton
             title="Upcoming Events"
-            isActive={activeTab === "upcoming"}
-            onPress={() => setActiveTab("upcoming")}
+            isActive={activeTab === "upcomming"}
+            onPress={() => setActiveTab("upcomming")}
           />
           <TabButton
-            title="Events Complete"
-            isActive={activeTab === "complete"}
-            onPress={() => setActiveTab("complete")}
+            title="Events Completed"
+            isActive={activeTab === "completed"}
+            onPress={() => setActiveTab("completed")}
           />
         </ScrollView>
+
+        {/* Floating Button */}
+        <TouchableOpacity
+          onPress={() =>
+            router.push("/pages/eventsApproval/components/CreateEvent")
+          }
+          className="absolute bottom-6 right-6 bg-blue-600 rounded-full p-4 shadow-lg"
+        >
+          <Ionicons name="add" size={20} color="white" />
+        </TouchableOpacity>
       </View>
 
       {/* Content */}
       <ScrollView className="flex-1">
         <View className="px-4 pb-8">
-          {activeTab === "upcoming" && (
-            <EventList events={eventsData.upcoming} />
-          )}
-          {activeTab === "complete" && (
-            <CompletedEventList events={eventsData.completed} />
+          {loading ? (
+            <ActivityIndicator size="large" color="#2563eb" />
+          ) : activeTab === "upcomming" ? (
+            <EventList events={events} />
+          ) : (
+            <CompletedEventList events={events} />
           )}
         </View>
       </ScrollView>

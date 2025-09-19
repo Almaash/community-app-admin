@@ -4,10 +4,9 @@ import { useRouter } from "expo-router";
 
 type Notification = {
   id: string;
-  title: string;
-  message: string;
-  date: string;
-  imageUrl?: string; // Optional image URL
+  username: string;
+  description: string;
+  userImage?: string; // Optional image URL
 };
 
 interface Props {
@@ -28,17 +27,15 @@ const NotificationList: React.FC<Props> = ({ notifications }) => {
           <Image
             source={{
               uri:
-                item.imageUrl ||
-                "https://res.cloudinary.com/dnkfvkyre/image/upload/v1747202665/item_images/xkfzmqpzayofb1hwmi79.png",
+                item.userImage,
             }}
             className="w-10 h-10 rounded-full mt-1"
           />
           <View className="flex-1">
             <Text className="text-sm font-medium text-gray-900">
-              {item.title}
+              {item.username}
             </Text>
-            <Text className="text-sm text-gray-700 mt-1">{item.message}</Text>
-            <Text className="text-xs text-gray-400 mt-2">{item.date}</Text>
+            <Text className="text-sm text-gray-700 mt-1">{item.description}</Text>
           </View>
         </TouchableOpacity>
       ))}

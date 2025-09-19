@@ -9,6 +9,7 @@ export default function ProjectApiList() {
     api_Register: `${baseUrl}/api/users/register`,
     api_updateUser: `${baseUrl}/api/profile/business`,
     api_Login: `${baseUrl}/api/users/login`,
+    api_getAdminDashboard: `${baseUrl}/api/dashboard/counts`,
 
 
     //chat apis
@@ -24,6 +25,9 @@ export default function ProjectApiList() {
     
     // post
     api_postFeed: `${baseUrl}/api/posts/feed`,
+    api_getApprovedPost: `${baseUrl}/api/posts/feed/get-by-status`,
+    api_getPostByID: `${baseUrl}/api/posts/feed/get-by-id`,
+    api_updatePostStatus: `${baseUrl}/api/posts/feed`,
     
     // product
     api_addProduct: `${baseUrl}/api/product/add`,
@@ -31,23 +35,42 @@ export default function ProjectApiList() {
     api_getOthersProduct: `${baseUrl}/api/product/approved/by-user`,
     api_getProductById: `${baseUrl}/api/product/get`,
     api_updateProduct: `${baseUrl}/api/product/update`,
+    api_postProductApprove: `${baseUrl}/api/product/approve`,
+    api_postProductRejected: `${baseUrl}/api/product/reject`,
+
+    api_getAdminProducts: `${baseUrl}/api/product/products`,
     
     //user 
     api_getUserData: `${baseUrl}/api/users/me`,
     api_getProfileCardData: `${baseUrl}/api/profile/card`,
     api_getOtherUserData: `${baseUrl}/api/users/get`,
+    api_getOtherUserDataBan: `${baseUrl}/api/users/ban`,
+    api_getOtherUserDataUnBan: `${baseUrl}/api/users/unban`,
+    api_getOtherUserDataFeeDefaulter: `${baseUrl}/api/deafulter/payments/request`,
+    api_getOtherUserDataRemoveFeeDefaulter: `${baseUrl}/api/deafulter/payments/toggle`,
+    api_getNewUserData: `${baseUrl}/api/users/get-new`,
+    api_getNewUserDataId: `${baseUrl}/api/users/get`,
     api_getAllUser: `${baseUrl}/api/users/approved-users/filter`,
+    api_postApproveUser: `${baseUrl}/api/users/approve`,
     
     //referral
     api_postReferrals: `${baseUrl}/api/referal/send`,
     api_getReferrals: `${baseUrl}/api/referal/received`,
     api_postPoints: `${baseUrl}/api/referal/accept`,
+
     
     //referral
     api_getupcommingEvents: `${baseUrl}/api/events/upcoming`,
     api_getupcommingEventbyId: `${baseUrl}/api/events/get-by-id`,
     api_getCompletedEvents: `${baseUrl}/api/events/completed`,
     api_postRegisterEvents: `${baseUrl}/api/events/register`,
+    
+    // craete events
+    api_postCreateEvents: `${baseUrl}/api/events/create`,
+    api_getEventListings: `${baseUrl}/api/events/`,
+    api_getEventById: `${baseUrl}/api/events/get-by-id`,
+    api_getEventRegistrations: `${baseUrl}/api/events`,
+    api_postEventVerification: `${baseUrl}/api/events/verify`,
 
   };
 

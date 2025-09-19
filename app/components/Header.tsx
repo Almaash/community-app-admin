@@ -1,10 +1,9 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, TextInput, TouchableOpacity, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { SafeAreaView } from "react-native-safe-area-context"; 
+import { TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Header({ setSearchQuery, searchQuery }: any) {
   const [user, setUser] = useState<{ ownerImage?: string } | null>(null);
@@ -25,7 +24,7 @@ export default function Header({ setSearchQuery, searchQuery }: any) {
 
   return (
     <SafeAreaView className="bg-white"> 
-      <View className="flex-row items-center px-4 py-3">
+      {/* <View className="flex-row items-center px-4 py-3">
         <TouchableOpacity onPress={() => router.push(`/profile?type=self`)}>
           {user?.ownerImage ? (
             <Image
@@ -51,6 +50,12 @@ export default function Header({ setSearchQuery, searchQuery }: any) {
 
         <TouchableOpacity className="ml-3" onPress={() => router.push("/chat")}>
           <Ionicons name="chatbubble-ellipses" size={30} color="#4B5563" />
+        </TouchableOpacity>
+      </View> */}
+      <View className="flex-row items-center px-2 py-3">
+        {/* Back Button */}
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={26} color="#444" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
