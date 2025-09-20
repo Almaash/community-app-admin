@@ -9,7 +9,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin";
 
 export default function LoginForm() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { api_Login } = ProjectApiList();
   const router = useRouter();
 
@@ -24,53 +24,88 @@ export default function LoginForm() {
     })
   }, [])
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsSubmitting(true);
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
+const handleGoogleSignIn = async () => {
+  try {
+    setIsSubmitting(true);
+    await GoogleSignin.hasPlayServices();
+    const response = await GoogleSignin.signIn();
 
-      if (isSuccessResponse(response)) {
-        const { idToken } = response.data;
+    if (isSuccessResponse(response)) {
+      const { idToken } = response.data;
 
-        if (idToken) {
-          try {
-            const apiResponse = await axios.post(api_Login, { idToken });
-            const { token, user: userData } = apiResponse.data.data || {};
-            // console.log(token, "token====================>")
+      if (idToken) {
+        try {
+          const apiResponse = await axios.post(api_Login, { idToken });
+          const { token, user: userData } = apiResponse.data.data || {};
+
+          if (userData?.role === "admin") {
+            // Admin login allowed
             await AsyncStorage.setItem("userData", JSON.stringify(userData));
             await AsyncStorage.setItem("token", token);
             login();
             // router.replace("/profile");
-          } catch (apiErr: any) {
-            const errorMessage = apiErr.response?.data?.message || "Login failed";
-            Alert.alert("Error", errorMessage);
+          } else {
+            // Not an admin → show alert and then logout
+            Alert.alert(
+              "Access Denied",
+              "You are not an admin",
+              [
+                {
+                  text: "OK",
+                  onPress: async () => {
+                    // Clear local storage
+                    await AsyncStorage.removeItem("userData");
+                    await AsyncStorage.removeItem("token");
+
+                    // Sign out from Google
+                    try {
+                      await GoogleSignin.signOut();
+                    } catch (error) {
+                      console.log("Google Signout Error:", error);
+                    }
+
+                    // Call your logout logic
+                    logout();
+
+                    // Redirect to login page
+                    router.replace("/login");
+                  },
+                },
+              ],
+              { cancelable: false }
+            );
           }
-        } else {
-          Alert.alert("Error", "Google sign-in failed: no token found");
+        } catch (apiErr: any) {
+          const errorMessage = apiErr.response?.data?.message || "Login failed";
+          Alert.alert("Error", errorMessage);
         }
       } else {
-        Alert.alert("Info", "Google Signin was cancelled");
+        Alert.alert("Error", "Google sign-in failed: no token found");
       }
-    } catch (error) {
-      if (isErrorWithCode(error)) {
-        switch (error.code) {
-          case statusCodes.IN_PROGRESS:
-            Alert.alert("Info", "Google Signin is in progress");
-            break;
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            Alert.alert("Error", "Play services are not available");
-            break;
-          default:
-            Alert.alert("Error", error.code);
-        }
-      } else {
-        Alert.alert("Error", "An error occurred");
-      }
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      Alert.alert("Info", "Google Signin was cancelled");
     }
-  };
+  } catch (error) {
+    if (isErrorWithCode(error)) {
+      switch (error.code) {
+        case statusCodes.IN_PROGRESS:
+          Alert.alert("Info", "Google Signin is in progress");
+          break;
+        case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+          Alert.alert("Error", "Play services are not available");
+          break;
+        default:
+          Alert.alert("Error", error.code);
+      }
+    } else {
+      Alert.alert("Error", "An error occurred");
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
 
   return (
     <View className="flex-1 justify-center bg-white px-6">

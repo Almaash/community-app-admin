@@ -64,6 +64,7 @@ export default function ProjectApiList() {
     api_getupcommingEventbyId: `${baseUrl}/api/events/get-by-id`,
     api_getCompletedEvents: `${baseUrl}/api/events/completed`,
     api_postRegisterEvents: `${baseUrl}/api/events/register`,
+
     
     // craete events
     api_postCreateEvents: `${baseUrl}/api/events/create`,

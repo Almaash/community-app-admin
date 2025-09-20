@@ -55,6 +55,8 @@ export default function Tab() {
       .includes(search.toLowerCase())
   );
 
+  // console.log(filteredUsers)
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <Stack.Screen options={{ headerShown: false }} />
@@ -103,10 +105,10 @@ export default function Tab() {
                     {item?.firstName} {item?.lastName}
                   </Text>
                   <Text className="text-sm text-gray-600">
-                    {item?.businessName || "N/A"}
+                    Email: {item?.email || "N/A"}
                   </Text>
                   <Text className="text-sm text-gray-600">
-                    {item?.businessCategory || "N/A"}
+                    State: {item?.state || "N/A"}
                   </Text>
                 </View>
               </View>
