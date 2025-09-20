@@ -11,6 +11,7 @@ import {
   Modal,
   SafeAreaView,
   ScrollView,
+  StatusBar,
   Text,
   TouchableOpacity,
   View,
@@ -52,7 +53,7 @@ const formatDateAndTime = (dateStr: string, timeStr: string) => {
 };
 
 export default function EventScreen() {
-  const { api_getEventById, api_getEventRegistrations, api_postEventVerification } =
+  const { api_getEventById, api_getEventRegistrations, api_postEventVerification, } =
     ProjectApiList();
   const { id } = useLocalSearchParams(); // ✅ event ID from route
 
@@ -149,10 +150,15 @@ export default function EventScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#ffffff"
+        translucent={false}
+      />
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Banner */}
-      <Animated.View style={{ height: 250, overflow: "hidden" }}>
+      <Animated.View style={{ height: 250, overflow: "hidden" , marginTop: 20,}}>
         <Animated.Image
           source={{ uri: event.bannerUrl }}
           style={{
@@ -211,11 +217,10 @@ export default function EventScreen() {
                   {user.registeredAt || "No date"}
                 </Text>
                 <Text
-                  className={`text-sm font-medium ${
-                    user.status === "verified"
+                  className={`text-sm font-medium ${user.status === "verified"
                       ? "text-green-600"
                       : "text-yellow-600"
-                  }`}
+                    }`}
                 >
                   {user.status}
                 </Text>
