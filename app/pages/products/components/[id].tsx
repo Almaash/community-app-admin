@@ -49,7 +49,7 @@ const ProductViewScreen = () => {
     setLoading(true);
     try {
       const res = await ApiService.get(`${api_getProductById}/${id}`);
-      if (res?.data?.success) {
+      if (res?.data?.status) {
         setProduct(res.data.data);
       } else {
         Alert.alert("Error", "Product not found.");
@@ -83,7 +83,7 @@ const ProductViewScreen = () => {
               `${api_postProductApprove}/${id}`,
               {}
             );
-            if (res?.data?.success) {
+            if (res?.data?.status) {
               Alert.alert("Success", "Product approved.");
               fetchProduct();
             } else {
@@ -120,7 +120,7 @@ const ProductViewScreen = () => {
       const res = await ApiService.post(`${api_postProductRejected}/${id}`, {
         rejectRemarks: rejectRemark,
       });
-      if (res?.data?.success) {
+      if (res?.data?.status) {
         Alert.alert("Rejected", "Product rejected successfully.");
         setRemarkModalVisible(false);
         fetchProduct();

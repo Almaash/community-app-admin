@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
   ScrollView,
   Switch,
   Text,
@@ -24,6 +25,8 @@ interface PaymentType {
   status: string;
   active: boolean;
   qrImage?: string;
+  screenshot?: string;
+  description?: string;
   createdAt: { _seconds: number; _nanoseconds: number };
 }
 
@@ -49,6 +52,7 @@ const ProfileScreen = () => {
     api_getOtherUserDataUnBan,
     api_getOtherUserDataRemoveFeeDefaulter,
     api_getOtherUserDataFeeDefaulter,
+    api_postApprovePaymentDefaulter
   } = ProjectApiList();
 
   const [userData, setUserData] = useState<UserDataType | null>(null);
@@ -61,6 +65,10 @@ const ProfileScreen = () => {
 
   const [banExpanded, setBanExpanded] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+
+  // modal state
+  const [selectedPayment, setSelectedPayment] = useState<PaymentType | null>(null);
+  const [approveAmount, setApproveAmount] = useState("");
 
   // fetch current user data
   const fetchUserData = async () => {
@@ -96,7 +104,7 @@ const ProfileScreen = () => {
       );
     } finally {
       setIsLoading(false);
-      fetchUserData(); // ✅ Refetch after ban
+      fetchUserData();
     }
   };
 
@@ -114,10 +122,11 @@ const ProfileScreen = () => {
       );
     } finally {
       setIsLoading(false);
-      fetchUserData(); // ✅ Refetch after unban
+      fetchUserData();
     }
   };
-  // Pick image (no upload yet)
+
+  // Pick image
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -137,7 +146,7 @@ const ProfileScreen = () => {
 
     if (!result.canceled) {
       const selectedAsset = result.assets[0];
-      setDefaulterImage(selectedAsset.uri); // keep only in state
+      setDefaulterImage(selectedAsset.uri);
     }
   };
 
@@ -155,7 +164,7 @@ const ProfileScreen = () => {
         { active: false }
       );
 
-      if (res?.data?.success) {
+      if (res?.data?.status) {
         setIsOn(false);
         setEditingPaymentId(null);
         Alert.alert("Success", "Profile unmarked as fee defaulter.");
@@ -170,10 +179,9 @@ const ProfileScreen = () => {
       );
     } finally {
       setIsLoading(false);
-      fetchUserData(); // ✅ Refresh data
+      fetchUserData();
     }
   };
-
 
   // Add / Update Fee Defaulter
   const handleFeeDefaulterToggle = async (newValue: boolean) => {
@@ -190,7 +198,6 @@ const ProfileScreen = () => {
     try {
       setIsLoading(true);
 
-      // build FormData
       const formData = new FormData();
       formData.append("amount", amount);
       formData.append("active", newValue ? "true" : "false");
@@ -214,7 +221,7 @@ const ProfileScreen = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (res?.data?.success) {
+      if (res?.data?.status) {
         setIsOn(newValue);
         setEditingPaymentId(null);
         Alert.alert(
@@ -237,9 +244,45 @@ const ProfileScreen = () => {
       );
     } finally {
       setIsLoading(false);
-      fetchUserData(); // ✅ Always refresh data after post/update
+      fetchUserData();
     }
-  }
+  };
+
+  // Approve Defaulter Payment
+  const handleApprovePayment = async () => {
+    if (!selectedPayment) return;
+
+    if (!approveAmount) {
+      Alert.alert("Validation", "Please enter an amount.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const res = await ApiService.post(
+        `${api_postApprovePaymentDefaulter}/${selectedPayment.id}`,
+        { amount: Number(approveAmount) }
+      );
+      console.log(res?.data)
+
+      if (res?.data?.status) {
+        Alert.alert("Success", "Payment approved successfully.");
+        setSelectedPayment(null);
+        fetchUserData();
+      } else {
+        Alert.alert("Error", res?.data?.message || "Approval failed.");
+      }
+    } catch (error: any) {
+      console.error("Approval Error:", error);
+      Alert.alert(
+        "Error",
+        error?.response?.data?.message || "Failed to approve payment."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (userData) {
       setIsBanned(userData?.banned === true);
@@ -259,39 +302,33 @@ const ProfileScreen = () => {
         <ScrollView className="flex-1">
           {/* Profile Section */}
           <View className="px-4 items-center mt-10">
-            <View className="relative mb-4">
-              <Image
-                source={{
-                  uri:
-                    userData?.ownerImage || "https://via.placeholder.com/150",
-                }}
-                className="w-32 h-32 rounded-full mb-4"
-              />
-            </View>
-
-            <View className="mb-6 items-center">
-              <Text className="text-xl font-bold text-black mb-1 text-center">
-                {userData?.firstName} {userData?.lastName}
-              </Text>
-              <Text className="text-gray-600 mb-2 text-center">
-                <Text className="font-bold">{userData?.businessName}</Text>
-                <Text>{` | ${userData?.city} | ${userData?.state}`}</Text>
-              </Text>
-            </View>
+            <Image
+              source={{
+                uri: userData?.ownerImage || "https://via.placeholder.com/150",
+              }}
+              className="w-32 h-32 rounded-full mb-4 border-4 border-blue-100"
+            />
+            <Text className="text-xl font-bold text-black mb-1 text-center">
+              {userData?.firstName} {userData?.lastName}
+            </Text>
+            <Text className="text-gray-600 mb-2 text-center">
+              <Text className="font-bold">{userData?.businessName}</Text>
+              <Text>{` | ${userData?.city} | ${userData?.state}`}</Text>
+            </Text>
           </View>
 
-          {/* Defaulter Section */}
-          <View className="bg-white rounded-xl border border-gray-200 mb-4 mx-2">
+          {/* Fees Defaulter Section */}
+          <View className="bg-white rounded-xl shadow-md mb-4 mx-3">
             <TouchableOpacity
               className="flex-row justify-between items-center px-4 py-4"
               onPress={() => setExpanded(!expanded)}
             >
               <View>
-                <Text className="text-base font-semibold text-gray-900">
+                <Text className="text-lg font-bold text-gray-900">
                   Fees Defaulter
                 </Text>
                 <Text className="text-sm text-gray-500">
-                  Add a Tag to the profile and mark as defaulter
+                  Manage fee defaulter records
                 </Text>
               </View>
               <Ionicons
@@ -302,20 +339,18 @@ const ProfileScreen = () => {
             </TouchableOpacity>
 
             {expanded && (
-              <View className="px-4 pb-4 space-y-4">
-                {/* Amount input */}
+              <View className="px-4 pb-6 space-y-4">
                 <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-3"
+                  className="border border-gray-300 rounded-lg px-3 py-3 bg-gray-50"
                   placeholder="₹ Enter Amount"
                   value={amount}
                   onChangeText={setAmount}
                   keyboardType="numeric"
                 />
 
-                {/* Image Picker */}
                 <TouchableOpacity
                   onPress={pickImage}
-                  className="w-32 h-32 bg-gray-200 rounded-lg items-center justify-center"
+                  className="w-32 h-32 bg-gray-100 rounded-lg items-center justify-center border border-gray-200"
                 >
                   {defaulterImage ? (
                     <Image
@@ -327,22 +362,19 @@ const ProfileScreen = () => {
                   )}
                 </TouchableOpacity>
 
-                {/* Toggle */}
-                {/* Post Defaulter Button */}
                 <TouchableOpacity
                   onPress={() => handleFeeDefaulterToggle(true)}
-                  className="bg-blue-600 rounded-lg px-4 py-3 mt-2"
+                  className="bg-blue-600 rounded-lg px-4 py-3"
                 >
                   <Text className="text-white font-semibold text-center">
                     {editingPaymentId ? "Update Defaulter" : "Mark as Defaulter"}
                   </Text>
                 </TouchableOpacity>
 
-                {/* Remove Defaulter Button (optional if you still want to unmark) */}
                 {isOn && (
                   <TouchableOpacity
                     onPress={handleRemoveFeeDefaulter}
-                    className="bg-gray-500 rounded-lg px-4 py-3 mt-2"
+                    className="bg-gray-500 rounded-lg px-4 py-3"
                   >
                     <Text className="text-white font-semibold text-center">
                       Remove Defaulter
@@ -350,73 +382,105 @@ const ProfileScreen = () => {
                   </TouchableOpacity>
                 )}
 
-
-
-                {/* Existing Payments List */}
+                {/* Previous Records */}
                 {userData?.payments && userData.payments.length > 0 && (
-                  <View className="mt-6 space-y-3">
-                    <Text className="text-base font-semibold text-gray-900 mb-2">
+                  <View className="mt-6">
+                    <Text className="text-base font-bold text-gray-900 mb-3">
                       Previous Records
                     </Text>
+
                     {userData.payments.map((p) => (
                       <View
                         key={p.id}
-                        className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                        className="flex-row items-center p-4 border border-gray-200 rounded-lg bg-white mb-3 shadow-sm"
                       >
-                        <Text className="font-semibold text-black">
-                          Amount: ₹{p.amount}
-                        </Text>
-                        <Text className={`text-sm font-bold ${p.active ? "text-green-600" : "text-red-600"}`}>
-                          Active: {p.active ? "Yes" : "No"}
-                        </Text>
-                        <Text className="text-xs text-gray-500">
-                          {new Date(p.createdAt._seconds * 1000).toLocaleString()}
-                        </Text>
+                        {/* Left: Both Images */}
+                        <View className="flex-col mr-4">
+                          {p.qrImage && (
+                            <Image
+                              source={{ uri: p.qrImage }}
+                              className="w-20 h-20 rounded-lg border mb-2"
+                              resizeMode="cover"
+                            />
+                          )}
+                          {p.screenshot && (
+                            <TouchableOpacity onPress={() => setSelectedPayment(p)}>
+                              <Image
+                                source={{ uri: p.screenshot }}
+                                className="w-20 h-20 rounded-lg border"
+                                resizeMode="cover"
+                              />
+                            </TouchableOpacity>
+                          )}
+                        </View>
 
+                        {/* Right: Payment Details */}
+                        <View className="flex-1">
+                          {/* Amount + Status */}
+                          <View className="flex-row justify-between items-center mb-1">
+                            <Text className="font-semibold text-black text-base">
+                              ₹{p.amount}
+                            </Text>
+                            <Text
+                              className={`text-xs font-medium px-2 py-1 rounded-lg ${p.status === "approved"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"
+                                }`}
+                            >
+                              {p.status === "approved" ? "Approved" : "Pending"}
+                            </Text>
+                          </View>
 
-                        {p.qrImage ? (
-                          <Image
-                            source={{ uri: p.qrImage }}
-                            className="w-24 h-24 mt-2 rounded-md"
-                            resizeMode="cover"
-                          />
-                        ) : null}
-
-                        {/* Edit Button */}
-                        <TouchableOpacity
-                          onPress={() => {
-                            setAmount(p.amount.toString());
-                            setDefaulterImage(p.qrImage || null);
-                            setIsOn(p.active);
-                            setEditingPaymentId(p.id);
-                            setExpanded(true);
-                          }}
-                          className="mt-3 bg-blue-500 rounded-lg px-3 py-2"
-                        >
-                          <Text className="text-white text-center text-sm font-medium">
-                            Edit
+                          {/* Active Status */}
+                          <Text
+                            className={`text-sm font-semibold mb-1 ${p.active ? "text-green-600" : "text-red-600"
+                              }`}
+                          >
+                            Active: {p.active ? "Yes" : "No"}
                           </Text>
-                        </TouchableOpacity>
+
+                          {/* Date */}
+                          <Text className="text-xs text-gray-500 mb-2">
+                            {new Date(p.createdAt._seconds * 1000).toLocaleString()}
+                          </Text>
+
+                          {/* Edit Button */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              setAmount(p.amount.toString());
+                              setDefaulterImage(p.qrImage || null);
+                              setIsOn(p.active);
+                              setEditingPaymentId(p.id);
+                              setExpanded(true);
+                            }}
+                            className="bg-blue-500 rounded-lg px-3 py-2"
+                          >
+                            <Text className="text-white text-center text-sm font-medium">
+                              Edit Record
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     ))}
                   </View>
                 )}
+
+
+
               </View>
             )}
           </View>
 
           {/* Ban Section */}
-          <View className="bg-white rounded-xl border border-gray-200 mb-4 mx-2">
+          <View className="bg-white rounded-xl shadow-md mb-6 mx-3">
             <TouchableOpacity
               className="flex-row justify-between items-center px-4 py-4"
               onPress={() => setBanExpanded(!banExpanded)}
             >
               <View>
-                <Text className="text-base font-semibold text-gray-900">
-                  Ban
-                </Text>
+                <Text className="text-lg font-bold text-gray-900">Ban</Text>
                 <Text className="text-sm text-gray-500">
-                  Stop profile for using the CBA App
+                  Restrict this profile from using the app
                 </Text>
               </View>
               <Ionicons
@@ -427,8 +491,8 @@ const ProfileScreen = () => {
             </TouchableOpacity>
 
             {banExpanded && (
-              <View className="px-4 pb-4 space-y-4">
-                <View className="flex-row items-center px-4 py-2">
+              <View className="px-4 pb-6">
+                <View className="flex-row items-center">
                   <Text className="font-semibold text-sm mr-3">
                     BAN PROFILE
                   </Text>
@@ -472,6 +536,70 @@ const ProfileScreen = () => {
           </View>
         </ScrollView>
       )}
+
+      {/* Payment Verification Modal */}
+      <Modal
+        visible={!!selectedPayment}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedPayment(null)}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center">
+          <View className="bg-white w-11/12 p-6 rounded-xl shadow-xl">
+            <Text className="text-lg font-bold mb-4 text-center">
+              Verify Payment
+            </Text>
+
+            {selectedPayment && (
+              <>
+                <Text className="text-base font-semibold text-black mb-2">
+                  Amount Submitted: ₹{selectedPayment.amount}
+                </Text>
+                <Text className="text-sm text-gray-600 mb-2">
+                  Status: {selectedPayment.status}
+                </Text>
+
+                {selectedPayment.screenshot && (
+                  <Image
+                    source={{ uri: selectedPayment.screenshot }}
+                    className="w-full h-64 rounded-lg mb-4 border"
+                    resizeMode="contain"
+                  />
+                )}
+
+                <TextInput
+                  className="border border-gray-300 rounded-lg px-3 py-3 mb-4 bg-gray-50"
+                  placeholder="Enter Approved Amount"
+                  value={approveAmount}
+                  onChangeText={setApproveAmount}
+                  keyboardType="numeric"
+                />
+
+                <TouchableOpacity
+                  onPress={handleApprovePayment}
+                  className="bg-green-600 rounded-lg px-4 py-3 mb-2"
+                  disabled={selectedPayment.status === "approved"}
+                >
+                  <Text className="text-white text-center font-semibold">
+                    {selectedPayment.status === "approved"
+                      ? "Already Approved"
+                      : "Approve Payment"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setSelectedPayment(null)}
+                  className="bg-gray-500 rounded-lg px-4 py-3"
+                >
+                  <Text className="text-white text-center font-semibold">
+                    Close
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };

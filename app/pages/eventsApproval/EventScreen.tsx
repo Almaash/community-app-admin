@@ -15,8 +15,8 @@ import {
 import CompletedEventList from "./components/CompletedEventList";
 import EventList from "./components/EventList";
 import TabButton from "./components/TabButton";
-import { CloudCog } from "lucide-react-native";
-// import uploadApi from "@/app/utils/uploadApi"; // 👈 use your interceptor instance
+// import { CloudCog } from "lucide-react-native";
+// import uploadApi from "@/app/utils/uploadApi"; // use your interceptor instance
 
 export default function EventScreen() {
   const [activeTab, setActiveTab] = useState<"upcomming" | "completed">(

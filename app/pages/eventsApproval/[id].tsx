@@ -13,6 +13,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -61,6 +62,8 @@ export default function EventScreen() {
   const [loading, setLoading] = useState(true);
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [amount, setAmount] = useState("");
+  const [showAmountModal, setShowAmountModal] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const imageScale = scrollY.interpolate({
@@ -109,10 +112,11 @@ export default function EventScreen() {
   }, [id]);
 
   // ✅ Handle verification
-  const handleVerifyUser = async (user: any) => {
+  const handleVerifyUser = async (user: any, amount: string) => {
     try {
       await ApiService.post(`${api_postEventVerification}/${id}/${user.id}`, {
         status: "verified",
+        amount, // ✅ send amount with verification
       });
 
       // update local state
@@ -122,7 +126,9 @@ export default function EventScreen() {
         )
       );
 
-      setSelectedUser(null); // close modal
+      setSelectedUser(null);
+      setShowAmountModal(false);
+      setAmount("");
     } catch (error) {
       console.error("❌ Verification failed", error);
       Alert.alert("Error", "Failed to verify user.");
@@ -158,7 +164,7 @@ export default function EventScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Banner */}
-      <Animated.View style={{ height: 250, overflow: "hidden" , marginTop: 20,}}>
+      <Animated.View style={{ height: 250, overflow: "hidden", marginTop: 20, }}>
         <Animated.Image
           source={{ uri: event.bannerUrl }}
           style={{
@@ -218,8 +224,8 @@ export default function EventScreen() {
                 </Text>
                 <Text
                   className={`text-sm font-medium ${user.status === "verified"
-                      ? "text-green-600"
-                      : "text-yellow-600"
+                    ? "text-green-600"
+                    : "text-yellow-600"
                     }`}
                 >
                   {user.status}
@@ -270,16 +276,75 @@ export default function EventScreen() {
 
               {selectedUser?.status === "pending" && (
                 <TouchableOpacity
-                  onPress={() => handleVerifyUser(selectedUser)}
+                  onPress={() => setShowAmountModal(true)} // ✅ open amount modal
                   className="bg-green-500 px-4 py-2 rounded-lg"
                 >
                   <Text className="text-white">Verify</Text>
                 </TouchableOpacity>
               )}
+
             </View>
           </View>
         </View>
       </Modal>
+
+      <Modal visible={showAmountModal} transparent animationType="fade">
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white rounded-lg p-4 w-full max-w-md">
+            <Text className="text-lg font-semibold mb-3 text-center">
+              Enter Verification Amount
+            </Text>
+
+            <TextInput
+              placeholder="Enter amount"
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="numeric"
+              className="border border-gray-300 rounded-lg px-3 py-2 mb-4"
+            />
+
+            <View className="flex-row justify-around">
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAmountModal(false);
+                  setAmount("");
+                }}
+                className="bg-gray-300 px-4 py-2 rounded-lg"
+              >
+                <Text>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (!amount) {
+                    Alert.alert("Validation", "Please enter a valid amount.");
+                    return;
+                  }
+
+                  Alert.alert(
+                    "Confirm Verification",
+                    `Are you sure you want to verify ${selectedUser?.name || "this user"} with amount ₹${amount}?`,
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Verify",
+                        style: "default",
+                        onPress: () => handleVerifyUser(selectedUser, amount),
+                      },
+                    ]
+                  );
+                }}
+                className="bg-green-500 px-4 py-2 rounded-lg"
+              >
+                <Text className="text-white">Confirm</Text>
+              </TouchableOpacity>
+
+
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }

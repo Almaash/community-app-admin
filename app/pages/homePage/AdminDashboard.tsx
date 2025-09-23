@@ -84,7 +84,7 @@ const handleLogout = () => {
         }
       );
 
-      if (res.data.success && res.data.data) {
+      if (res.data.status && res.data.data) {
         setCounts(res.data.data);
       }
     } catch (error) {
