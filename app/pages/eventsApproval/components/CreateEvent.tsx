@@ -137,7 +137,7 @@ export default function CreateEventScreen() {
 
       // console.log(res,"res=============>")
 
-      if (res?.data?.success) {
+      if (res?.data?.status) {
         Alert.alert("Success", "Event created successfully!");
         router.back();
       } else {

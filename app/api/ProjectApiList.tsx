@@ -52,6 +52,7 @@ export default function ProjectApiList() {
     api_getNewUserDataId: `${baseUrl}/api/users/get`,
     api_getAllUser: `${baseUrl}/api/users/approved-users/filter`,
     api_postApproveUser: `${baseUrl}/api/users/approve`,
+    api_postApprovePaymentDefaulter: `${baseUrl}/api/deafulter/payments/approve`,
     
     //referral
     api_postReferrals: `${baseUrl}/api/referal/send`,
