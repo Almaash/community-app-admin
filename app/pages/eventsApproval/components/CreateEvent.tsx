@@ -88,6 +88,9 @@ export default function CreateEventScreen() {
     }
   };
 
+  
+const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+
   // Create Event API Call
   const handleCreateEvent = async () => {
     if (!name || !description || !date || !time || !venue || !upiId) {
@@ -98,6 +101,16 @@ export default function CreateEventScreen() {
       Alert.alert("Validation Error", "Please upload a banner image.");
       return;
     }
+
+    // ✅ Check date format
+   if (!dateRegex.test(date.trim())) {
+  Alert.alert(
+    "Invalid Date Format",
+    "Please enter date in format: e.g. 2025-08-24"
+  );
+  return;
+}
+
 
     try {
       setLoading(true);
@@ -110,7 +123,6 @@ export default function CreateEventScreen() {
       formData.append("venue", venue);
       formData.append("upiId", upiId);
 
-      // Banner Image
       if (banner) {
         const fileType = banner.split(".").pop();
         formData.append("banner", {
@@ -120,7 +132,6 @@ export default function CreateEventScreen() {
         } as any);
       }
 
-      // QR Code Image
       if (qrcodeImage) {
         const fileType = qrcodeImage.split(".").pop();
         formData.append("qrcodeImage", {
@@ -129,15 +140,12 @@ export default function CreateEventScreen() {
           type: `image/${fileType}`,
         } as any);
       }
-      // console.log(formData,"formData =============>")
 
       const res = await uploadApi.post(api_postCreateEvents, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // console.log(res,"res=============>")
-
-      if (res?.data?.status) {
+      if (res?.data?.success) {
         Alert.alert("Success", "Event created successfully!");
         router.back();
       } else {
@@ -186,11 +194,11 @@ export default function CreateEventScreen() {
 
           {/* Date */}
           <View className="bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 shadow-sm">
-            <Text className="text-gray-800 font-medium mb-1">Date</Text>
+            <Text className="text-gray-800 font-medium mb-1">Date (year-month-date)</Text>
             <TextInput
               value={date}
               onChangeText={setDate}
-              placeholder="e.g. 7th June, 2025"
+              placeholder="e.g. 2025-08-24"
               placeholderTextColor="#9ca3af"
               className="text-gray-700"
             />
@@ -317,9 +325,8 @@ export default function CreateEventScreen() {
           <TouchableOpacity
             onPress={handleCreateEvent}
             disabled={loading}
-            className={`${
-              loading ? "bg-gray-400" : "bg-blue-600"
-            } py-4 rounded-lg shadow-md mb-10`}
+            className={`${loading ? "bg-gray-400" : "bg-blue-600"
+              } py-4 rounded-lg shadow-md mb-10`}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />

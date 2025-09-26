@@ -1,6 +1,7 @@
 import ProjectApiList from "@/app/api/ProjectApiList";
 import ApiService from "@/app/utils/axiosInterceptor";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -54,7 +55,7 @@ const formatDateAndTime = (dateStr: string, timeStr: string) => {
 };
 
 export default function EventScreen() {
-  const { api_getEventById, api_getEventRegistrations, api_postEventVerification, } =
+  const { api_getEventById, api_getEventRegistrations, api_postEventVerification, api_deleteEvent } =
     ProjectApiList();
   const { id } = useLocalSearchParams(); // ✅ event ID from route
 
@@ -135,6 +136,36 @@ export default function EventScreen() {
     }
   };
 
+  // ✅ Delete Event
+  const handleDeleteEvent = async () => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this event? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await axios.post(`${api_deleteEvent}/${id}`);
+              if (res?.data?.success) {
+                Alert.alert("Success", "Event deleted successfully!");
+                router.back(); // go back after deletion
+              } else {
+                Alert.alert("Error", res?.data?.message || "Failed to delete event.");
+              }
+            } catch (err) {
+              console.error("❌ Delete Event Error:", err);
+              Alert.alert("Error", "Something went wrong while deleting the event.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+
   // ✅ Loading state
   if (loading) {
     return (
@@ -203,6 +234,15 @@ export default function EventScreen() {
         <Text className="text-gray-600 text-base mb-6 leading-relaxed">
           {event.description}
         </Text>
+        <TouchableOpacity
+          onPress={handleDeleteEvent}
+          className="bg-red-600 py-3 rounded-lg mt-4 shadow-md"
+        >
+          <Text className="text-white text-center font-semibold text-base">
+            Delete Event
+          </Text>
+        </TouchableOpacity>
+
 
         {/* Registrations */}
         <View className="bg-white p-4 rounded-lg shadow-sm">
