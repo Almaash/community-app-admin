@@ -73,6 +73,7 @@ export default function ProjectApiList() {
     api_getEventById: `${baseUrl}/api/events/get-by-id`,
     api_getEventRegistrations: `${baseUrl}/api/events`,
     api_postEventVerification: `${baseUrl}/api/events/verify`,
+    api_deleteEvent: `${baseUrl}/api/events/delete`,
 
   };
 
