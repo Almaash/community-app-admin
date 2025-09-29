@@ -24,86 +24,87 @@ export default function LoginForm() {
     })
   }, [])
 
-const handleGoogleSignIn = async () => {
-  try {
-    setIsSubmitting(true);
-    await GoogleSignin.hasPlayServices();
-    const response = await GoogleSignin.signIn();
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsSubmitting(true);
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
 
-    if (isSuccessResponse(response)) {
-      const { idToken } = response.data;
+      if (isSuccessResponse(response)) {
+        const { idToken } = response.data;
 
-      if (idToken) {
-        try {
-          const apiResponse = await axios.post(api_Login, { idToken });
-          const { token, user: userData } = apiResponse.data.data || {};
+        if (idToken) {
 
-          if (userData?.role === "admin") {
-            // Admin login allowed
-            await AsyncStorage.setItem("userData", JSON.stringify(userData));
-            await AsyncStorage.setItem("token", token);
-            login();
-            // router.replace("/profile");
-          } else {
-            // Not an admin → show alert and then logout
-            Alert.alert(
-              "Access Denied",
-              "You are not an admin",
-              [
-                {
-                  text: "OK",
-                  onPress: async () => {
-                    // Clear local storage
-                    await AsyncStorage.removeItem("userData");
-                    await AsyncStorage.removeItem("token");
+          try {
+            const apiResponse = await axios.post(api_Login, { idToken });
+            const { token, user: userData } = apiResponse.data.data || {};
 
-                    // Sign out from Google
-                    try {
-                      await GoogleSignin.signOut();
-                    } catch (error) {
-                      console.log("Google Signout Error:", error);
-                    }
+            if (userData?.role === "admin") {
+              // Admin login allowed
+              await AsyncStorage.setItem("userData", JSON.stringify(userData));
+              await AsyncStorage.setItem("token", token);
+              login();
+              // router.replace("/profile");
+            } else {
+              // Not an admin → show alert and then logout
+              Alert.alert(
+                "Access Denied",
+                "You are not an admin",
+                [
+                  {
+                    text: "OK",
+                    onPress: async () => {
+                      // Clear local storage
+                      await AsyncStorage.removeItem("userData");
+                      await AsyncStorage.removeItem("token");
 
-                    // Call your logout logic
-                    logout();
+                      // Sign out from Google
+                      try {
+                        await GoogleSignin.signOut();
+                      } catch (error) {
+                        console.log("Google Signout Error:", error);
+                      }
 
-                    // Redirect to login page
-                    router.replace("/login");
+                      // Call your logout logic
+                      logout();
+
+                      // Redirect to login page
+                      router.replace("/login");
+                    },
                   },
-                },
-              ],
-              { cancelable: false }
-            );
+                ],
+                { cancelable: false }
+              );
+            }
+          } catch (apiErr: any) {
+            const errorMessage = apiErr.response?.data?.message || "Login failed";
+            Alert.alert("Error", errorMessage);
           }
-        } catch (apiErr: any) {
-          const errorMessage = apiErr.response?.data?.message || "Login failed";
-          Alert.alert("Error", errorMessage);
+        } else {
+          Alert.alert("Error", "Google sign-in failed: no token found");
         }
       } else {
-        Alert.alert("Error", "Google sign-in failed: no token found");
+        Alert.alert("Info", "Google Signin was cancelled");
       }
-    } else {
-      Alert.alert("Info", "Google Signin was cancelled");
-    }
-  } catch (error) {
-    if (isErrorWithCode(error)) {
-      switch (error.code) {
-        case statusCodes.IN_PROGRESS:
-          Alert.alert("Info", "Google Signin is in progress");
-          break;
-        case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-          Alert.alert("Error", "Play services are not available");
-          break;
-        default:
-          Alert.alert("Error", error.code);
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            Alert.alert("Info", "Google Signin is in progress");
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Alert.alert("Error", "Play services are not available");
+            break;
+          default:
+            Alert.alert("Error", error.code);
+        }
+      } else {
+        Alert.alert("Error", "An error occurred");
       }
-    } else {
-      Alert.alert("Error", "An error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
 
 

@@ -49,15 +49,18 @@ export default function ProjectApiList() {
     api_getOtherUserDataFeeDefaulter: `${baseUrl}/api/deafulter/payments/request`,
     api_getOtherUserDataRemoveFeeDefaulter: `${baseUrl}/api/deafulter/payments/toggle`,
     api_getNewUserData: `${baseUrl}/api/users/get-new`,
+    api_getNewMatrimonialRequest: `${baseUrl}/api/users/get-new-user`,
     api_getNewUserDataId: `${baseUrl}/api/users/get`,
     api_getAllUser: `${baseUrl}/api/users/approved-users/filter`,
     api_postApproveUser: `${baseUrl}/api/users/approve`,
+    api_postApproveMatrimonial: `${baseUrl}/api/users/matrimonial-access`,
     api_postApprovePaymentDefaulter: `${baseUrl}/api/deafulter/payments/approve`,
     
     //referral
     api_postReferrals: `${baseUrl}/api/referal/send`,
     api_getReferrals: `${baseUrl}/api/referal/received`,
     api_postPoints: `${baseUrl}/api/referal/accept`,
+    api_givePoints: `${baseUrl}/api/referal/give-points`,
 
     
     //referral
