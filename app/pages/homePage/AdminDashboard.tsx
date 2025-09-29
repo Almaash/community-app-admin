@@ -1,24 +1,23 @@
+import ProjectApiList from "@/app/api/ProjectApiList";
+import { useAuth } from "@/app/context/AuthContext";
+import ApiService from "@/app/utils/axiosInterceptor";
 import {
   Feather,
   Ionicons,
-  MaterialCommunityIcons,
-  MaterialIcons,
+  MaterialIcons
 } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   SafeAreaView,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "@/app/context/AuthContext";
-import ApiService from "@/app/utils/axiosInterceptor";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import ProjectApiList from "@/app/api/ProjectApiList";
 
 
 const AdminDashboard = () => {
@@ -163,7 +162,7 @@ const handleLogout = () => {
           >
             <Ionicons name="person-outline" size={30} color="#4088E3" />
             <Text className="text-gray-800 text-sm font-semibold mt-2">
-              New User
+              New Business User
             </Text>
             <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
               {counts.pendingUsers} New
@@ -194,6 +193,33 @@ const handleLogout = () => {
             <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
               {counts.totalUsers} Total
             </Text>
+          </TouchableOpacity>
+        </View>
+        <View className="flex-row justify-between mt-5">
+          <TouchableOpacity
+            onPress={() => router.push(`/pages/matrinonialsAccessRequest/newUsers`)}
+            className="bg-gray-100 shadow p-4 rounded-2xl items-center w-[30%]"
+          >
+            <Ionicons name="person-outline" size={30} color="#4088E3" />
+            <Text className="text-gray-800 text-sm font-semibold mt-2">
+              Matrimonial Access Request
+            </Text>
+            <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
+              {counts.pendingUsers} New
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/pages/awardPoints/awardPoints`)}
+            className="bg-gray-100 shadow p-4 rounded-2xl items-center w-[30%]"
+          >
+            <Ionicons name="person-outline" size={30} color="#4088E3" />
+            <Text className="text-gray-800 text-sm font-semibold mt-2">
+             Award Points
+            </Text>
+            {/* <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
+              {counts.pendingUsers} New
+            </Text> */}
           </TouchableOpacity>
         </View>
       </View>
