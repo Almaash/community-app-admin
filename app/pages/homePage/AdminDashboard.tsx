@@ -35,39 +35,39 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-const handleLogout = () => {
-  const router = useRouter();
+  const handleLogout = () => {
+    const router = useRouter();
 
-  Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
-    { text: "Cancel", style: "cancel" },
-    {
-      text: "Logout",
-      style: "destructive",
-      onPress: async () => {
-        try {
-          // Clear local storage
-          await AsyncStorage.removeItem("userData");
-          await AsyncStorage.removeItem("token");
-
-          // Sign out from Google if logged in
+    Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
           try {
-            await GoogleSignin.signOut();
-          } catch (error) {
-            console.log("Google Signout Error:", error);
+            // Clear local storage
+            await AsyncStorage.removeItem("userData");
+            await AsyncStorage.removeItem("token");
+
+            // Sign out from Google if logged in
+            try {
+              await GoogleSignin.signOut();
+            } catch (error) {
+              console.log("Google Signout Error:", error);
+            }
+
+            // Your app logout logic
+            logout();
+
+            // Redirect to login
+            router.replace("/login");
+          } catch (err) {
+            console.log("Logout Error:", err);
           }
-
-          // Your app logout logic
-          logout();
-
-          // Redirect to login
-          router.replace("/login");
-        } catch (err) {
-          console.log("Logout Error:", err);
-        }
+        },
       },
-    },
-  ]);
-};
+    ]);
+  };
 
   const fetchDashboardCounts = async () => {
     try {
@@ -161,13 +161,16 @@ const handleLogout = () => {
             className="bg-gray-100 shadow p-4 rounded-2xl items-center w-[30%]"
           >
             <Ionicons name="person-outline" size={30} color="#4088E3" />
-            <Text className="text-gray-800 text-sm font-semibold mt-2">
+
+            <Text className="text-gray-800 text-sm font-semibold mt-2 text-center">
               New Business User
             </Text>
-            <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
+
+            <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3 text-center">
               {counts.pendingUsers} New
             </Text>
           </TouchableOpacity>
+
 
           <TouchableOpacity
             onPress={() => router.push(`/pages/products/ListedProducts`)}
@@ -201,22 +204,34 @@ const handleLogout = () => {
             className="bg-gray-100 shadow p-4 rounded-2xl items-center w-[30%]"
           >
             <Ionicons name="person-outline" size={30} color="#4088E3" />
-            <Text className="text-gray-800 text-sm font-semibold mt-2">
-              Matrimonial Access Request
+            <Text className="text-gray-800 text-sm font-semibold mt-2 text-center">
+              Matrimonial Acces Request
             </Text>
-            <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
+            <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3 text-center">
               {counts.pendingUsers} New
             </Text>
           </TouchableOpacity>
+
 
           <TouchableOpacity
             onPress={() => router.push(`/pages/awardPoints/awardPoints`)}
             className="bg-gray-100 shadow p-4 rounded-2xl items-center w-[30%]"
           >
             <Ionicons name="person-outline" size={30} color="#4088E3" />
+
+            <Text className="text-gray-800 text-sm font-semibold mt-2 text-center">
+              Award Points
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            // onPress={() => router.push(`/pages/awardPoints/awardPoints`)}
+            className="bg-white p-4 rounded-2xl items-center w-[30%]"
+          >
+            {/* <Ionicons name="person-outline" size={30} color="#4088E3" />
             <Text className="text-gray-800 text-sm font-semibold mt-2">
              Award Points
-            </Text>
+            </Text> */}
             {/* <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3">
               {counts.pendingUsers} New
             </Text> */}
