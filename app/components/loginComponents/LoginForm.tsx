@@ -14,6 +14,7 @@ export default function LoginForm() {
   const router = useRouter();
 
   const [message, showMessage] = useState('');
+  const [defaultTkn, setDefaultTkn] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -32,9 +33,9 @@ export default function LoginForm() {
 
       if (isSuccessResponse(response)) {
         const { idToken } = response.data;
-
+        
         if (idToken) {
-
+          setDefaultTkn(idToken)
           try {
             const apiResponse = await axios.post(api_Login, { idToken });
             const { token, user: userData } = apiResponse.data.data || {};
@@ -105,6 +106,8 @@ export default function LoginForm() {
       setIsSubmitting(false);
     }
   };
+
+  console.log(defaultTkn,"-------------->")
 
 
 

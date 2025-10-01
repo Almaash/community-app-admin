@@ -55,7 +55,7 @@ export default function Tab() {
       .includes(search.toLowerCase())
   );
 
-  // console.log(filteredUsers)
+  console.log(filteredUsers)
 
   return (
     <SafeAreaView className="flex-1 bg-white">

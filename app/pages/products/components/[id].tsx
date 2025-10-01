@@ -49,7 +49,7 @@ const ProductViewScreen = () => {
     setLoading(true);
     try {
       const res = await ApiService.get(`${api_getProductById}/${id}`);
-      if (res?.data?.status) {
+      if (res?.data?.success) {
         setProduct(res.data.data);
       } else {
         Alert.alert("Error", "Product not found.");
@@ -83,7 +83,7 @@ const ProductViewScreen = () => {
               `${api_postProductApprove}/${id}`,
               {}
             );
-            if (res?.data?.status) {
+            if (res?.data?.success) {
               Alert.alert("Success", "Product approved.");
               fetchProduct();
             } else {
