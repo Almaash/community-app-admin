@@ -35,10 +35,11 @@ export default function LoginForm() {
         const { idToken } = response.data;
         
         if (idToken) {
-          setDefaultTkn(idToken)
+          // setDefaultTkn(idToken)
           try {
             const apiResponse = await axios.post(api_Login, { idToken });
             const { token, user: userData } = apiResponse.data.data || {};
+            setDefaultTkn(token)
 
             if (userData?.role === "admin") {
               // Admin login allowed
