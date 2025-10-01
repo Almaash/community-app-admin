@@ -15,9 +15,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { BlurView } from "expo-blur";
-import api from "@/app/utils/axiosInterceptor";
-import ProjectApiList from "@/app/api/ProjectApiList";
 import ApiService from "@/app/utils/axiosInterceptor";
+import ProjectApiList from "@/app/api/ProjectApiList";
 
 export default function PostApprovalScreen() {
   const { id } = useLocalSearchParams();
@@ -30,6 +29,9 @@ export default function PostApprovalScreen() {
   const [reason, setReason] = useState("");
   const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
 
+  // image loading state
+  const [imageLoading, setImageLoading] = useState(false);
+
   // Fetch post by ID
   const fetchPost = async () => {
     if (!id) {
@@ -38,7 +40,7 @@ export default function PostApprovalScreen() {
     }
     setLoading(true);
     try {
-      const res = await api.get(`${api_getPostByID}/${id}`);
+      const res = await ApiService.get(`${api_getPostByID}/${id}`);
       setPost(res.data?.data || null);
     } catch (err) {
       console.error("❌ Failed to fetch post", err);
@@ -58,8 +60,6 @@ export default function PostApprovalScreen() {
     setShowModal(true);
   };
 
-  // console.log(post,"post===========>")
-
   // Approve or reject post
   const handleConfirm = async () => {
     if (actionType === "reject" && !reason) {
@@ -74,18 +74,12 @@ export default function PostApprovalScreen() {
 
     try {
       await ApiService.post(`${api_updatePostStatus}/${id}/update-status`, payload);
-      console.log(actionType === "approve" ? "✅ Post approved" : `❌ Post rejected: ${reason}`);
       setShowModal(false);
       setReason("");
       fetchPost(); // refresh data
     } catch (err) {
       console.error("❌ Failed to update post", err);
     }
-  };
-
-  const handleCancel = () => {
-    setShowModal(false);
-    router.back();
   };
 
   if (loading) {
@@ -140,10 +134,15 @@ export default function PostApprovalScreen() {
           <Text className="text-lg font-semibold mb-2">Post Media & Description</Text>
           <Text className="text-base text-gray-600 mt-1 mb-1">{post?.description}</Text>
           {post?.mediaUrl ? (
-            <Image
-              source={{ uri: post.mediaUrl }}
-              className="w-full h-48 rounded-lg bg-gray-300"
-            />
+            <View className="w-full h-48 rounded-lg bg-gray-300 items-center justify-center">
+              {imageLoading && <ActivityIndicator size="large" color="#3B82F6" />}
+              <Image
+                source={{ uri: post.mediaUrl }}
+                className="w-full h-48 rounded-lg"
+                onLoadStart={() => setImageLoading(true)}
+                onLoadEnd={() => setImageLoading(false)}
+              />
+            </View>
           ) : (
             <Text className="text-gray-500">No media available</Text>
           )}
@@ -180,7 +179,6 @@ export default function PostApprovalScreen() {
                     </TouchableOpacity>
                   </View>
 
-                  {/* Only show reason input and confirm button if not already approved/rejected */}
                   {post.status === "approved" || post.status === "rejected" ? (
                     <TouchableOpacity
                       onPress={() => setShowModal(false)}
@@ -192,7 +190,9 @@ export default function PostApprovalScreen() {
                     <>
                       {actionType === "reject" && (
                         <>
-                          <Text className="text-gray-600 mb-2">Enter Detailed Reason for rejection</Text>
+                          <Text className="text-gray-600 mb-2">
+                            Enter Detailed Reason for rejection
+                          </Text>
                           <TextInput
                             multiline
                             value={reason}

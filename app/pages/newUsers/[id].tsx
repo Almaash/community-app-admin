@@ -255,7 +255,7 @@ export default function UserDetails() {
       <Modal visible={amountModalVisible} transparent animationType="slide">
         <View className="flex-1 bg-black/60 justify-center items-center px-6">
           <View className="bg-white w-full rounded-xl p-6">
-            <Text className="text-lg font-semibold mb-4">Enter Amount</Text>
+            <Text className="text-lg font-semibold mb-4">Enter amount for Receipt Generation</Text>
             <TextInput
               value={amount}
               onChangeText={setAmount}
