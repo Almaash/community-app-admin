@@ -84,7 +84,12 @@ export default function UserDetails() {
             await fetchUserDetails();
             setAmountModalVisible(false);
             setAmount("");
-            Alert.alert("Success", "User verified successfully ✅");
+            Alert.alert("Success", "User verified successfully ✅", [
+              {
+                text: "OK",
+                onPress: () => router.back() // Navigate back to new users list
+              }
+            ]);
           } catch (error: any) {
             console.error("Verify error:", error?.response?.data || error);
             Alert.alert("Error", "Something went wrong while verifying user");

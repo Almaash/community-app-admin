@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "community-admin-app",
+    "name": "CBA Admin",
     "slug": "community-admin-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,15 +14,17 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    },  
+    },
     "android": {
+      "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.almaash.communityappadmin",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "label": "CBA Admin"
     },
     "web": {
       "bundler": "metro",
@@ -57,9 +59,9 @@
       "googleSignInWebClientId": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com",
       "router": {},
       "eas": {
-        "projectId": "90a7eecb-c6c3-418e-ac71-b6121c92f374"
+        "projectId": "45e38ccf-93b7-488d-8c2d-76839cd3da73"
       }
     },
-    "owner": "kaushalkantmis"
+    "owner": "kaushalkant"
   }
 }

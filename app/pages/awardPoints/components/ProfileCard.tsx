@@ -98,7 +98,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   return (
     <View className="bg-white rounded-2xl p-5 m-2 shadow-sm border border-gray-200 w-[95%] self-center">
       {/* Avatar */}
-      <View className="w-16 h-16 rounded-full mb-4 items-center justify-center self-center shadow-sm overflow-hidden bg-gray-100">
+      <View className="w-16 h-16 rounded-full mb-4 items-center justify-center self-center shadow-sm overflow-hidden bg-gray-200">
         {profileImageUrl ? (
           <Image
             source={{ uri: profileImageUrl }}
@@ -106,7 +106,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             resizeMode="cover"
           />
         ) : (
-          <FontAwesome name="user" size={30} color="#4B5563" />
+          <FontAwesome name="user" size={30} color="#6B7280" />
         )}
       </View>
 
@@ -194,13 +194,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
               /> */}
 
               <TextInput
-                placeholder="Refer Members"
+                placeholder="Total Refer Members Count"
+                placeholderTextColor="#9CA3AF"
                 keyboardType="numeric"
                 value={form.referMembers}
                 onChangeText={(val) =>
                   setForm((prev) => ({ ...prev, referMembers: val }))
                 }
                 className="border border-gray-300 rounded-lg px-4 py-2 mt-3"
+                style={{ color: '#374151' }}
               />
 
               {/* Buttons */}
