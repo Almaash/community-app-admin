@@ -6,6 +6,7 @@ import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, router } from "expo-router";
 import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
@@ -17,21 +18,66 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
 } from "react-native";
+
+type FormData = {
+  name: string;
+  date: string;
+  time: string;
+  venue: string;
+  upiId: string;
+  description: string;
+};
 
 export default function CreateEventScreen() {
   const { api_postCreateEvents } = ProjectApiList();
+  const { control, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
+    defaultValues: {
+      name: "",
+      date: "",
+      time: "",
+      venue: "",
+      upiId: "boism-8340407179@boi",
+      description: "",
+    }
+  });
 
-  const [name, setName] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [venue, setVenue] = useState("");
-  const [upiId, setUpiId] = useState("");
-  const [description, setDescription] = useState("");
   const [banner, setBanner] = useState<string | null>(null);
-  const [qrcodeImage, setQrcodeImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [timeModalVisible, setTimeModalVisible] = useState(false);
+  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedHour, setSelectedHour] = useState("");
+  const [selectedMinute, setSelectedMinute] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("AM");
 
+  const watchedDate = watch("date");
+  const watchedTime = watch("time");
+
+  // Handle date selection
+  const handleDateConfirm = () => {
+    if (selectedDay && selectedMonth && selectedYear) {
+      const formattedDate = `${selectedYear}-${selectedMonth.padStart(2, '0')}-${selectedDay.padStart(2, '0')}`;
+      setValue("date", formattedDate);
+      setDateModalVisible(false);
+    } else {
+      Alert.alert("Error", "Please select day, month, and year");
+    }
+  };
+
+  // Handle time selection
+  const handleTimeConfirm = () => {
+    if (selectedHour && selectedMinute) {
+      const formattedTime = `${selectedHour}:${selectedMinute.padStart(2, '0')} ${selectedPeriod}`;
+      setValue("time", formattedTime);
+      setTimeModalVisible(false);
+    } else {
+      Alert.alert("Error", "Please select hour and minute");
+    }
+  };
   // Pick Banner Image
   const pickBanner = async () => {
     try {
@@ -71,72 +117,29 @@ export default function CreateEventScreen() {
     }
   };
 
-  // Pick QR Code Image
-  const pickQrCode = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        setQrcodeImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error("Error picking QR:", error);
-      Alert.alert("Error", "Failed to select QR Code image.");
-    }
-  };
-
-  
-const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
-
   // Create Event API Call
-  const handleCreateEvent = async () => {
-    if (!name || !description || !date || !time || !venue || !upiId) {
-      Alert.alert("Validation Error", "Please fill all fields.");
-      return;
-    }
+  const onSubmit = async (data: FormData) => {
     if (!banner) {
       Alert.alert("Validation Error", "Please upload a banner image.");
       return;
     }
 
-    // ✅ Check date format
-   if (!dateRegex.test(date.trim())) {
-  Alert.alert(
-    "Invalid Date Format",
-    "Please enter date in format: e.g. 2025-08-24"
-  );
-  return;
-}
-
-
     try {
       setLoading(true);
 
       const formData = new FormData();
-      formData.append("name", name);
-      formData.append("description", description);
-      formData.append("date", date);
-      formData.append("time", time);
-      formData.append("venue", venue);
-      formData.append("upiId", upiId);
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("date", data.date);
+      formData.append("time", data.time);
+      formData.append("venue", data.venue);
+      formData.append("upiId", data.upiId);
 
       if (banner) {
         const fileType = banner.split(".").pop();
         formData.append("banner", {
           uri: banner,
           name: `banner.${fileType}`,
-          type: `image/${fileType}`,
-        } as any);
-      }
-
-      if (qrcodeImage) {
-        const fileType = qrcodeImage.split(".").pop();
-        formData.append("qrcodeImage", {
-          uri: qrcodeImage,
-          name: `qrcode.${fileType}`,
           type: `image/${fileType}`,
         } as any);
       }
@@ -183,60 +186,87 @@ const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
             <Text className="text-gray-800 font-medium mb-1">
               Full Name of the Event
             </Text>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g. June 1st Meeting"
-              placeholderTextColor="#9ca3af"
-              className="text-gray-700"
+            <Controller
+              control={control}
+              name="name"
+              rules={{ required: "Event name is required" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g. June 1st Meeting"
+                  placeholderTextColor="#9ca3af"
+                  className="text-gray-700"
+                />
+              )}
             />
+            {errors.name && <Text className="text-red-500 text-sm mt-1">{errors.name.message}</Text>}
           </View>
 
           {/* Date */}
           <View className="bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 shadow-sm">
-            <Text className="text-gray-800 font-medium mb-1">Date (year-month-date)</Text>
-            <TextInput
-              value={date}
-              onChangeText={setDate}
-              placeholder="e.g. 2025-08-24"
-              placeholderTextColor="#9ca3af"
-              className="text-gray-700"
-            />
+            <Text className="text-gray-800 font-medium mb-1">Date</Text>
+            <TouchableOpacity onPress={() => setDateModalVisible(true)}>
+              <View className="py-2">
+                <Text className={watchedDate ? "text-gray-700" : "text-gray-400"}>
+                  {watchedDate || "Select date (DD/MM/YYYY)"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            {errors.date && <Text className="text-red-500 text-sm mt-1">{errors.date.message}</Text>}
           </View>
 
           {/* Time */}
           <View className="bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 shadow-sm">
             <Text className="text-gray-800 font-medium mb-1">Time</Text>
-            <TextInput
-              value={time}
-              onChangeText={setTime}
-              placeholder="e.g. 1:00 PM"
-              placeholderTextColor="#9ca3af"
-              className="text-gray-700"
-            />
+            <TouchableOpacity onPress={() => setTimeModalVisible(true)}>
+              <View className="py-2">
+                <Text className={watchedTime ? "text-gray-700" : "text-gray-400"}>
+                  {watchedTime || "Select time"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            {errors.time && <Text className="text-red-500 text-sm mt-1">{errors.time.message}</Text>}
           </View>
 
           {/* Venue */}
           <View className="bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 shadow-sm">
             <Text className="text-gray-800 font-medium mb-1">Venue</Text>
-            <TextInput
-              value={venue}
-              onChangeText={setVenue}
-              placeholder="e.g. Community Hall"
-              placeholderTextColor="#9ca3af"
-              className="text-gray-700"
+            <Controller
+              control={control}
+              name="venue"
+              rules={{ required: "Venue is required" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g. Community Hall"
+                  placeholderTextColor="#9ca3af"
+                  className="text-gray-700"
+                />
+              )}
             />
+            {errors.venue && <Text className="text-red-500 text-sm mt-1">{errors.venue.message}</Text>}
           </View>
 
           {/* UPI ID */}
           <View className="bg-white border border-gray-200 rounded-xl px-4 py-3 mb-4 shadow-sm">
             <Text className="text-gray-800 font-medium mb-1">UPI ID</Text>
-            <TextInput
-              value={upiId}
-              onChangeText={setUpiId}
-              placeholder="e.g. yourupi@bank"
-              placeholderTextColor="#9ca3af"
-              className="text-gray-700"
+            <Controller
+              control={control}
+              name="upiId"
+              rules={{ required: "UPI ID is required" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="e.g. yourupi@bank"
+                  placeholderTextColor="#9ca3af"
+                  className="text-gray-700"
+                  editable={false}
+                  style={{ backgroundColor: '#f9fafb' }}
+                />
+              )}
             />
           </View>
 
@@ -245,16 +275,24 @@ const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
             <Text className="text-gray-800 font-medium mb-1">
               Description of the Event
             </Text>
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Enter description"
-              placeholderTextColor="#9ca3af"
-              multiline
-              numberOfLines={5}
-              textAlignVertical="top"
-              className="text-gray-700"
+            <Controller
+              control={control}
+              name="description"
+              rules={{ required: "Description is required" }}
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  value={value}
+                  onChangeText={onChange}
+                  placeholder="Enter description"
+                  placeholderTextColor="#9ca3af"
+                  multiline
+                  numberOfLines={5}
+                  textAlignVertical="top"
+                  className="text-gray-700"
+                />
+              )}
             />
+            {errors.description && <Text className="text-red-500 text-sm mt-1">{errors.description.message}</Text>}
           </View>
 
           {/* Upload Banner */}
@@ -289,41 +327,9 @@ const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
             )}
           </TouchableOpacity>
 
-          {/* Upload QR Code */}
-          <Text className="text-sm text-gray-600 mb-1">Upload QR Code</Text>
-          <TouchableOpacity
-            onPress={pickQrCode}
-            className="border border-dashed border-gray-400 rounded-lg h-40 items-center justify-center mb-8 relative"
-          >
-            {qrcodeImage ? (
-              <>
-                <Image
-                  source={{ uri: qrcodeImage }}
-                  className="w-full h-full rounded-lg"
-                />
-                <TouchableOpacity
-                  onPress={() => setQrcodeImage(null)}
-                  className="absolute top-2 right-2 bg-gray-200 rounded-full p-1"
-                  style={{ zIndex: 10 }}
-                >
-                  <Ionicons name="close" size={20} color="black" />
-                </TouchableOpacity>
-              </>
-            ) : (
-              <View className="items-center">
-                <Ionicons
-                  name="qr-code-outline"
-                  size={30}
-                  color="#9CA3AF"
-                />
-                <Text className="text-gray-500 mt-1">Upload QR</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
           {/* Create Button */}
           <TouchableOpacity
-            onPress={handleCreateEvent}
+            onPress={handleSubmit(onSubmit)}
             disabled={loading}
             className={`${loading ? "bg-gray-400" : "bg-blue-600"
               } py-4 rounded-lg shadow-md mb-10`}
@@ -338,6 +344,142 @@ const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Date Modal */}
+      <Modal visible={dateModalVisible} transparent animationType="slide">
+        <View className="flex-1 bg-black/50 justify-center px-6">
+          <View className="bg-white rounded-xl p-6">
+            <Text className="text-lg font-semibold mb-4">Select Date</Text>
+            
+            <View className="flex-row justify-between mb-4">
+              <View className="flex-1 mr-2">
+                <Text className="text-sm text-gray-600 mb-1">Day</Text>
+                <TextInput
+                  value={selectedDay}
+                  onChangeText={setSelectedDay}
+                  placeholder="DD"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-center"
+                  style={{ color: '#374151' }}
+                />
+              </View>
+              <View className="flex-1 mx-1">
+                <Text className="text-sm text-gray-600 mb-1">Month</Text>
+                <TextInput
+                  value={selectedMonth}
+                  onChangeText={setSelectedMonth}
+                  placeholder="MM"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-center"
+                  style={{ color: '#374151' }}
+                />
+              </View>
+              <View className="flex-1 ml-2">
+                <Text className="text-sm text-gray-600 mb-1">Year</Text>
+                <TextInput
+                  value={selectedYear}
+                  onChangeText={setSelectedYear}
+                  placeholder="YYYY"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  maxLength={4}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-center"
+                  style={{ color: '#374151' }}
+                />
+              </View>
+            </View>
+            
+            <View className="flex-row justify-end space-x-3">
+              <TouchableOpacity
+                onPress={() => setDateModalVisible(false)}
+                className="px-4 py-2 bg-gray-200 rounded-lg"
+              >
+                <Text className="text-gray-700">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleDateConfirm}
+                className="px-4 py-2 bg-blue-600 rounded-lg ml-2"
+              >
+                <Text className="text-white">Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Time Modal */}
+      <Modal visible={timeModalVisible} transparent animationType="slide">
+        <View className="flex-1 bg-black/50 justify-center px-6">
+          <View className="bg-white rounded-xl p-6">
+            <Text className="text-lg font-semibold mb-4">Select Time</Text>
+            
+            <View className="flex-row justify-between mb-4">
+              <View className="flex-1 mr-2">
+                <Text className="text-sm text-gray-600 mb-1">Hour</Text>
+                <TextInput
+                  value={selectedHour}
+                  onChangeText={setSelectedHour}
+                  placeholder="12"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-center"
+                  style={{ color: '#374151' }}
+                />
+              </View>
+              <View className="flex-1 mx-1">
+                <Text className="text-sm text-gray-600 mb-1">Minute</Text>
+                <TextInput
+                  value={selectedMinute}
+                  onChangeText={setSelectedMinute}
+                  placeholder="00"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  maxLength={2}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-center"
+                  style={{ color: '#374151' }}
+                />
+              </View>
+              <View className="flex-1 ml-2">
+                <Text className="text-sm text-gray-600 mb-1">Period</Text>
+                <View className="flex-row">
+                  <TouchableOpacity
+                    onPress={() => setSelectedPeriod("AM")}
+                    className={`flex-1 py-2 rounded-l-lg border ${selectedPeriod === "AM" ? "bg-blue-600 border-blue-600" : "bg-gray-100 border-gray-300"}`}
+                  >
+                    <Text className={`text-center ${selectedPeriod === "AM" ? "text-white" : "text-gray-700"}`}>AM</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setSelectedPeriod("PM")}
+                    className={`flex-1 py-2 rounded-r-lg border ${selectedPeriod === "PM" ? "bg-blue-600 border-blue-600" : "bg-gray-100 border-gray-300"}`}
+                  >
+                    <Text className={`text-center ${selectedPeriod === "PM" ? "text-white" : "text-gray-700"}`}>PM</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            
+            <View className="flex-row justify-end space-x-3">
+              <TouchableOpacity
+                onPress={() => setTimeModalVisible(false)}
+                className="px-4 py-2 bg-gray-200 rounded-lg"
+              >
+                <Text className="text-gray-700">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleTimeConfirm}
+                className="px-4 py-2 bg-blue-600 rounded-lg ml-2"
+              >
+                <Text className="text-white">Confirm</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

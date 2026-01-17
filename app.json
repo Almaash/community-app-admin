@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "community-admin-app",
+    "name": "CBA Admin",
     "slug": "community-admin-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,15 +14,17 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    },  
+    },
     "android": {
+      "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.almaash.communityappadmin",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "label": "CBA Admin"
     },
     "web": {
       "bundler": "metro",

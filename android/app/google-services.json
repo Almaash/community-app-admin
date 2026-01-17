@@ -9,15 +9,23 @@
       "client_info": {
         "mobilesdk_app_id": "1:483558689899:android:c7cbd138d665293e7a752e",
         "android_client_info": {
-          "package_name": "com.almaash.communityappadmin"
+          "package_name": "com.almaash.communityapp"
         }
       },
       "oauth_client": [
         {
+          "client_id": "483558689899-2a9dgen9ag98aog2r1hfuat0jc34p14k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.almaash.communityapp",
+            "certificate_hash": "9318e3c15e20c4db623d94f93f6cc1b60f3374ed"
+          }
+        },
+        {
           "client_id": "483558689899-kvf06i7at3flhcc1oqlgv16a1f6bhpes.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.almaash.communityappadmin",
+            "package_name": "com.almaash.communityapp",
             "certificate_hash": "babd4132feeaf8fd74009afd852eec34bcb7dad4"
           }
         },
@@ -42,7 +50,59 @@
               "client_id": "483558689899-orv1amuafr6umd8gv2skihhoups2oe59.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.almaash.communityappadmin"
+                "bundle_id": "com.almaash.communityapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:483558689899:android:564b66964aee35e37a752e",
+        "android_client_info": {
+          "package_name": "com.almaash.communityappadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "483558689899-957k49qbj113s5fsdso66pk6qqjp9lag.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.almaash.communityappadmin",
+            "certificate_hash": "0c9a49a53f35c087aad6df9b94c7bd7f28bc1f34"
+          }
+        },
+        {
+          "client_id": "483558689899-so2841bpoj544l4t997soi6g8nfv83ef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.almaash.communityappadmin",
+            "certificate_hash": "f06be723c787155f2f6b47f615eb5eba07a3b5ef"
+          }
+        },
+        {
+          "client_id": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWsFAsN7keRXS0axPL84MkyVXrcw0B2QA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "483558689899-cm5rbfc963948ohq80lkg80sqj6i3tl0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "483558689899-orv1amuafr6umd8gv2skihhoups2oe59.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.almaash.communityapp"
               }
             }
           ]

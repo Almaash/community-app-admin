@@ -30,7 +30,9 @@ export default function Tab() {
       const data = await res.json();
 
       if (Array.isArray(data?.data)) {
-        setUsers(data.data);
+        // Filter out already verified users
+        const unverifiedUsers = data.data.filter(user => !user.isVerified);
+        setUsers(unverifiedUsers);
       } else {
         setUsers([]);
       }

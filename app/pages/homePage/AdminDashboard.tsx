@@ -28,6 +28,7 @@ const AdminDashboard = () => {
     pendingUsers: 0,
     pendingProducts: 0,
     totalUsers: 0,
+    matrimonialRequests: 0,
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -199,7 +200,7 @@ const AdminDashboard = () => {
                 Matrimonial Access Request
               </Text>
               <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3 text-center">
-                {counts.pendingUsers} New
+                {counts.matrimonialRequests} New
               </Text>
             </TouchableOpacity>
 
