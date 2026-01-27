@@ -1,18 +1,18 @@
 import ProjectApiList from "@/app/api/ProjectApiList";
 import Header from "@/app/components/Header";
 import ApiService from "@/app/utils/axiosInterceptor";
+import { useFocusEffect } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   Text,
   View,
-  RefreshControl,
 } from "react-native";
 import CommunityFilter from "./components/CommunityFilter";
 import ProfileCard from "./components/ProfileCard";
-import { useFocusEffect } from "@react-navigation/native";
 
 interface UserType {
   firstName: string;
@@ -21,6 +21,7 @@ interface UserType {
   referralCount?: number;
   ownerImage?: string;
   id?: string;
+  role?: string;
 }
 
 const CommunityScreen = () => {
@@ -87,6 +88,7 @@ const CommunityScreen = () => {
             <View key={index} className="w-1/2">
               <ProfileCard
                 id={data.id}
+                role={data.role}
                 profileName={data.firstName}
                 points={data.referralPoints}
                 referrals={data.referralCount}

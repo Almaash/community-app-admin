@@ -36,6 +36,7 @@ interface UserDataType {
   banned: boolean;
   businessName: string;
   city: string;
+  email: string;
   state: string;
   referralPoints?: number;
   referralCount?: number;
@@ -311,9 +312,10 @@ const ProfileScreen = () => {
             <Text className="text-xl font-bold text-black mb-1 text-center">
               {userData?.firstName} {userData?.lastName}
             </Text>
+            <Text className="font-semibold text-gray-600">{userData?.email}</Text>
             <Text className="text-gray-600 mb-2 text-center">
               <Text className="font-bold">{userData?.businessName}</Text>
-              <Text>{` | ${userData?.city} | ${userData?.state}`}</Text>
+              <Text>{` | ${userData?.city} | ${userData?.state} |`}</Text>
             </Text>
           </View>
 

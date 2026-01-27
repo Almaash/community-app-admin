@@ -5,13 +5,14 @@ import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Stack, useRouter } from "expo-router";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
-  RefreshControl,
   Text,
   TouchableOpacity,
   View,
@@ -32,6 +33,25 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [ownerImage, setOwnerImage] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const userDataString = await AsyncStorage.getItem("userData")
+        if (userDataString) {
+          const userData = JSON.parse(userDataString)
+
+          // ✅ ownerImage saved in async storage
+          setOwnerImage(userData?.ownerImage || null)
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error)
+      }
+    }
+
+    fetchUserId()
+  }, [])
 
   const handleLogout = () => {
     Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
@@ -59,6 +79,7 @@ const AdminDashboard = () => {
       },
     ]);
   };
+
 
   const fetchDashboardCounts = async () => {
     try {
@@ -113,8 +134,16 @@ const AdminDashboard = () => {
             Admin Control Dashboard
           </Text>
 
-          <View className="w-36 h-36 rounded-full bg-gray-700 self-center mt-4 items-center justify-center">
-            <Ionicons name="person-circle" size={100} color="white" />
+          <View className="w-36 h-36 rounded-full bg-gray-700 self-center mt-4 items-center justify-center overflow-hidden">
+            {ownerImage ? (
+              <Image
+                source={{ uri: ownerImage }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <Ionicons name="person-circle" size={100} color="white" />
+            )}
           </View>
         </View>
 
@@ -156,7 +185,7 @@ const AdminDashboard = () => {
             >
               <Ionicons name="person-outline" size={30} color="#4088E3" />
               <Text className="text-gray-800 text-sm font-semibold mt-2 text-center">
-                New Business User
+                New User Registration
               </Text>
               <Text className="bg-blue-500 text-white px-3 py-1 rounded-full mt-3 text-center">
                 {counts.pendingUsers} New

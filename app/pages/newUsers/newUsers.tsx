@@ -31,7 +31,7 @@ export default function Tab() {
 
       if (Array.isArray(data?.data)) {
         // Filter out already verified users
-        const unverifiedUsers = data.data.filter(user => !user.isVerified);
+        const unverifiedUsers = data.data.filter((user:any) => !user.isVerified);
         setUsers(unverifiedUsers);
       } else {
         setUsers([]);
@@ -105,6 +105,9 @@ export default function Tab() {
                 <View>
                   <Text className="font-semibold">
                     {item?.firstName} {item?.lastName}
+                  </Text>
+                  <Text className="text-sm text-gray-600 font-bold">
+                    Role: {item?.role || "N/A"}
                   </Text>
                   <Text className="text-sm text-gray-600">
                     Email: {item?.email || "N/A"}

@@ -59,48 +59,48 @@ export default function UserDetails() {
   }, [id]);
 
   // ✅ Handle verification
- const handleVerify = () => {
-  if (!amount) {
-    Alert.alert("Validation", "Please enter a valid amount.");
-    return;
-  }
+  const handleVerify = () => {
+    if (!amount) {
+      Alert.alert("Validation", "Please enter a valid amount.");
+      return;
+    }
 
-  Alert.alert(
-    "Confirm Verification",
-    `Are you sure you want to verify ${user?.firstName || "this user"} with amount ₹${amount}?`,
-    [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Verify",
-        style: "default",
-        onPress: async () => {
-          try {
-            setVerifying(true);
+    Alert.alert(
+      "Confirm Verification",
+      `Are you sure you want to verify ${user?.firstName || "this user"} with amount ₹${amount}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Verify",
+          style: "default",
+          onPress: async () => {
+            try {
+              setVerifying(true);
 
-            // 👇 capture API response
-            const res = await ApiService.post(`${api_postApproveUser}/${id}`, { amount });
-            console.log("Verify API Response:", res.data);
+              // 👇 capture API response
+              const res = await ApiService.post(`${api_postApproveUser}/${id}`, { amount });
+              console.log("Verify API Response:", res.data);
 
-            await fetchUserDetails();
-            setAmountModalVisible(false);
-            setAmount("");
-            Alert.alert("Success", "User verified successfully ✅", [
-              {
-                text: "OK",
-                onPress: () => router.back() // Navigate back to new users list
-              }
-            ]);
-          } catch (error: any) {
-            console.error("Verify error:", error?.response?.data || error);
-            Alert.alert("Error", "Something went wrong while verifying user");
-          } finally {
-            setVerifying(false);
-          }
+              await fetchUserDetails();
+              setAmountModalVisible(false);
+              setAmount("");
+              Alert.alert("Success", "User verified successfully ✅", [
+                {
+                  text: "OK",
+                  onPress: () => router.back() // Navigate back to new users list
+                }
+              ]);
+            } catch (error: any) {
+              console.error("Verify error:", error?.response?.data || error);
+              Alert.alert("Error", "Something went wrong while verifying user");
+            } finally {
+              setVerifying(false);
+            }
+          },
         },
-      },
-    ]
-  );
-};
+      ]
+    );
+  };
 
 
   if (loading) {
@@ -142,12 +142,28 @@ export default function UserDetails() {
           <Text className="text-2xl font-bold mt-4">
             {user?.firstName} {user?.lastName}
           </Text>
-          <Text className="text-gray-600 mt-1">
-            Business Name : {user?.businessName || "N/A"}
+          <Text className="text-gray-600 mt-1 font-bold">
+            Role : {user?.role || "N/A"}
           </Text>
-          <Text className="text-gray-600">
-            Business Category : {user?.businessCategory || "N/A"}
-          </Text>
+          {user?.role === "consumer" ? (
+            <>
+              <Text className="text-gray-600 mt-1">
+                State : {user?.state || "N/A"}
+              </Text>
+              <Text className="text-gray-600">
+                City : {user?.city || "N/A"}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text className="text-gray-600 mt-1">
+                Business Name : {user?.businessName || "N/A"}
+              </Text>
+              <Text className="text-gray-600">
+                Business Category : {user?.businessCategory || "N/A"}
+              </Text>
+            </>
+          )}
         </View>
 
         {/* 🏢 Extra Images Section */}
