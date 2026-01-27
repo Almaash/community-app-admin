@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-} from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type ProfileCardProps = {
   profileName?: string;
@@ -15,6 +15,7 @@ type ProfileCardProps = {
   referrals?: number;
   profileImageUrl?: string;
   id?: string;
+  role?: string;
 };
 
 const ProfileCard: React.FC<ProfileCardProps> = ({
@@ -23,8 +24,14 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   points = 0,
   referrals = 0,
   profileImageUrl,
+  role,
 }) => {
   const [loading, setLoading] = useState(false);
+
+  // Determine border color based on role
+  // Consumer -> Green, Others (Business) -> Yellow
+  const borderColor =
+    role?.toLowerCase() === "consumer" ? "border-green-500" : "border-yellow-500";
 
   const handleViewProfile = () => {
     setLoading(true);
@@ -33,9 +40,13 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   };
 
   return (
-    <View className="bg-white rounded-2xl p-5 m-2 shadow-sm border border-gray-200 w-[95%] self-center">
+    <View
+      className={`bg-white rounded-2xl p-5 m-2 shadow-sm border-2 w-[95%] self-center ${borderColor}`}
+    >
       {/* Avatar */}
-      <View className="w-16 h-16 rounded-full mb-4 items-center justify-center self-center shadow-sm overflow-hidden bg-gray-100">
+      <View
+        className={`w-16 h-16 rounded-full mb-4 items-center justify-center self-center shadow-sm overflow-hidden bg-gray-100 border-2 ${borderColor}`}
+      >
         {profileImageUrl ? (
           <Image
             source={{ uri: profileImageUrl }}
