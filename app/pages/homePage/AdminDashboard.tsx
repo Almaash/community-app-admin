@@ -7,15 +7,15 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Stack, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  RefreshControl,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    RefreshControl,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const AdminDashboard = () => {
@@ -134,7 +134,7 @@ const AdminDashboard = () => {
             Admin Control Dashboard
           </Text>
 
-          <View className="w-36 h-36 rounded-full bg-gray-700 self-center mt-4 items-center justify-center overflow-hidden">
+          <View className="w-36 h-36 rounded-full bg-gray-700 self-center mt-4 items-center justify-center overflow-hidden border-4 border-green-500">
             {ownerImage ? (
               <Image
                 source={{ uri: ownerImage }}

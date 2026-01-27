@@ -138,11 +138,16 @@ export default function UserDetails() {
             {user?.firstName} {user?.lastName}
           </Text>
           <Text className="text-gray-600 mt-1">
-            Business Name : {user?.businessName || "N/A"}
+            Role : {user?.role || "N/A"}
           </Text>
-          <Text className="text-gray-600">
-            Business Category : {user?.businessCategory || "N/A"}
-          </Text>
+          <View className="flex-row gap-4">
+            <Text className="text-gray-600">
+              State : {user?.state || "N/A"}
+            </Text>
+            <Text className="text-gray-600">
+              City : {user?.city || "N/A"}
+            </Text>
+          </View>
         </View>
 
         {/* 🏢 Extra Images Section */}
