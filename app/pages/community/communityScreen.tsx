@@ -22,6 +22,7 @@ interface UserType {
   ownerImage?: string;
   id?: string;
   role?: string;
+  matrimonialAccess?: boolean;
 }
 
 const CommunityScreen = () => {
@@ -93,6 +94,7 @@ const CommunityScreen = () => {
                 points={data.referralPoints}
                 referrals={data.referralCount}
                 profileImageUrl={data.ownerImage}
+                matrimonialAccess={data.matrimonialAccess}
               />
             </View>
           ))}

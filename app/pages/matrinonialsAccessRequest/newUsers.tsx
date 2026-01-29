@@ -75,7 +75,7 @@ export default function Tab() {
 
       {/* Title */}
       <Text className="text-lg font-semibold mt-5 mb-3 px-4">
-        Matrinonial User Requests
+        Matrimonial User Requests
       </Text>
 
       {/* Loading State */}

@@ -59,43 +59,50 @@ export default function UserDetails() {
   }, [id]);
 
   // ✅ Handle verification
- const handleVerify = () => {
-  if (!amount) {
-    Alert.alert("Validation", "Please enter a valid amount.");
-    return;
-  }
+  const handleVerify = () => {
+    if (!amount) {
+      Alert.alert("Validation", "Please enter a valid amount.");
+      return;
+    }
 
-  Alert.alert(
-    "Confirm Verification",
-    `Are you sure you want to verify ${user?.firstName || "this user"} with amount ₹${amount}?`,
-    [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Verify",
-        style: "default",
-        onPress: async () => {
-          try {
-            setVerifying(true);
+    Alert.alert(
+      "Confirm Verification",
+      `Are you sure you want to verify ${user?.firstName || "this user"} with amount ₹${amount}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Verify",
+          style: "default",
+          onPress: async () => {
+            try {
+              setVerifying(true);
 
-            // 👇 capture API response
-            const res = await ApiService.post(`${api_postApproveMatrimonial}/${id}`, { amount });
-            console.log("Verify API Response:", res.data);
+              // 👇 capture API response
+              const res = await ApiService.post(`${api_postApproveMatrimonial}/${id}`, { amount });
+              console.log("Verify API Response:", res.data);
 
-            await fetchUserDetails();
-            setAmountModalVisible(false);
-            setAmount("");
-            Alert.alert("Success", "User verified successfully ✅");
-          } catch (error: any) {
-            console.error("Verify error:", error?.response?.data || error);
-            Alert.alert("Error", "Something went wrong while verifying user");
-          } finally {
-            setVerifying(false);
-          }
+              await fetchUserDetails();
+              setAmountModalVisible(false);
+              setAmount("");
+
+              Alert.alert("Success", "Access Permitted Successfully ✅", [
+                {
+                  text: "OK",
+                  onPress: () =>
+                    router.replace("/pages/matrinonialsAccessRequest/newUsers"),
+                },
+              ]);
+            } catch (error: any) {
+              console.error("Verify error:", error?.response?.data || error);
+              Alert.alert("Error", "Something went wrong while verifying user");
+            } finally {
+              setVerifying(false);
+            }
+          },
         },
-      },
-    ]
-  );
-};
+      ]
+    );
+  };
 
 
   if (loading) {
@@ -173,12 +180,12 @@ export default function UserDetails() {
           {/* Payment Screenshot */}
           <View>
             <Text className="text-lg font-semibold mb-2">💳 Payment Screenshot</Text>
-            {user?.paymentScreenshot ? (
+            {user?.metromonialPaymentScreenshot ? (
               <TouchableOpacity
-                onPress={() => openPreview(user.paymentScreenshot)}
+                onPress={() => openPreview(user.metromonialPaymentScreenshot)}
               >
                 <Image
-                  source={{ uri: user.paymentScreenshot }}
+                  source={{ uri: user.metromonialPaymentScreenshot }}
                   className="w-full h-48 rounded-lg border border-gray-300"
                   resizeMode="contain"
                 />

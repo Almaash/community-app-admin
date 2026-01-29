@@ -16,6 +16,7 @@ type ProfileCardProps = {
   profileImageUrl?: string;
   id?: string;
   role?: string;
+  matrimonialAccess?: boolean;
 };
 
 const ProfileCard: React.FC<ProfileCardProps> = ({
@@ -25,6 +26,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   referrals = 0,
   profileImageUrl,
   role,
+  matrimonialAccess,
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -63,22 +65,49 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         {profileName || "Unknown"}
       </Text>
 
-      {/* Points and Referrals */}
-      <View className="flex justify-center items-center gap-x-2 mb-4">
-        <View className="bg-blue-50 px-3 rounded-full flex-row items-center">
-          <FontAwesome name="star" size={15} color="#2563EB" />
-          <Text className="text-blue-600 ml-1 text-md font-medium">
-            {points} pts
-          </Text>
+      {/* Points and Referrals or Statistics */}
+      {role?.toLowerCase() === "consumer" ? (
+        <View className="flex justify-center items-center gap-x-2 mb-4 min-h-[55px]">
+          <View className="bg-green-50 px-3 py-1 rounded-full flex-row items-center">
+            <FontAwesome name="user" size={15} color="#10B981" />
+            <Text className="text-green-600 ml-1 text-md font-medium">
+              Consumer
+            </Text>
+          </View>
+          {/* Matrimonial Access Status */}
+          {matrimonialAccess ? (
+            <View className="bg-blue-50 px-3 py-1 rounded-full flex-row items-center">
+              <FontAwesome name="check-circle" size={16} color="#2563EB" />
+              <Text className="text-blue-600 ml-2 text-xs font-medium">
+                Matrimonial Access
+              </Text>
+            </View>
+          ) : (
+            <View className="bg-red-50 px-3 py-1 rounded-full flex-row items-center">
+              <FontAwesome name="times-circle" size={16} color="#EF4444" />
+              <Text className="text-red-600 ml-2 text-xs font-medium">
+                Matrimonial Access
+              </Text>
+            </View>
+          )}
         </View>
+      ) : (
+        <View className="flex justify-center items-center gap-x-2 mb-4 min-h-[55px]">
+          <View className="bg-blue-50 px-3 rounded-full flex-row items-center">
+            <FontAwesome name="star" size={15} color="#2563EB" />
+            <Text className="text-blue-600 ml-1 text-md font-medium">
+              {points} pts
+            </Text>
+          </View>
 
-        <View className="px-3 py-1 rounded-full flex-row items-center">
-          <FontAwesome name="users" size={12} color="#10B981" />
-          <Text className="text-green-600 ml-1 text-sm font-medium">
-            {referrals} referral{referrals !== 1 ? "s" : ""}
-          </Text>
+          <View className="px-3 py-1 rounded-full flex-row items-center">
+            <FontAwesome name="users" size={12} color="#10B981" />
+            <Text className="text-green-600 ml-1 text-sm font-medium">
+              {referrals} referral{referrals !== 1 ? "s" : ""}
+            </Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* View Profile Button */}
       <TouchableOpacity
