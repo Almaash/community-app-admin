@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   Text,
@@ -20,6 +21,7 @@ export default function PostScreen() {
   const [activeTab, setActiveTab] = useState("pending");
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const { api_getApprovedPost } = ProjectApiList(); // single endpoint
 
@@ -35,6 +37,12 @@ export default function PostScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchPosts(activeTab);
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -96,7 +104,12 @@ export default function PostScreen() {
           <Text className="text-gray-500 mt-3">No Post available</Text>
         </SafeAreaView>
       ) : (
-        <ScrollView className="flex-1">
+        <ScrollView
+          className="flex-1"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        >
           <View className="px-4 pb-8">
             <NotificationList notifications={posts} />
           </View>

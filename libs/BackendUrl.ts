@@ -6,6 +6,7 @@
     
 
     // production
-    const BackendUrl = 'https://community-app-backend-5b2q.onrender.com'
+    const BackendUrl = 'https://community-app-backend-x4ed.onrender.com'
+    // const BackendUrl = 'https://community-app-backend-5b2q.onrender.com'
 
     export default BackendUrl;

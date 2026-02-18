@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import CommunityFilter from "./components/CommunityFilter";
@@ -29,6 +30,7 @@ const CommunityScreen = () => {
   const { api_getAllUser } = ProjectApiList();
   const [userList, setUserList] = useState<UserType[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"business" | "consumer">("business");
 
   // 🔎 search state
   const [search, setSearch] = useState("");
@@ -68,6 +70,38 @@ const CommunityScreen = () => {
       {/* Search Filter */}
       <CommunityFilter search={search} setSearch={setSearch} />
 
+      {/* Tabs */}
+      <View className="flex-row bg-white border-b border-gray-200">
+        <TouchableOpacity
+          className={`flex-1 py-4 items-center border-b-2 ${
+            activeTab === "business" ? "border-blue-500" : "border-transparent"
+          }`}
+          onPress={() => setActiveTab("business")}
+        >
+          <Text
+            className={`font-semibold ${
+              activeTab === "business" ? "text-blue-500" : "text-gray-500"
+            }`}
+          >
+            Business Users
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className={`flex-1 py-4 items-center border-b-2 ${
+            activeTab === "consumer" ? "border-blue-500" : "border-transparent"
+          }`}
+          onPress={() => setActiveTab("consumer")}
+        >
+          <Text
+            className={`font-semibold ${
+              activeTab === "consumer" ? "text-blue-500" : "text-gray-500"
+            }`}
+          >
+            Consumer Users
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 24 }}
@@ -85,7 +119,9 @@ const CommunityScreen = () => {
 
         {/* Profile Grid */}
         <View className="flex-row flex-wrap justify-between mt-2 mx-2">
-          {userList.map((data, index) => (
+          {userList
+            .filter((data) => data.role === activeTab)
+            .map((data, index) => (
             <View key={index} className="w-1/2">
               <ProfileCard
                 id={data.id}
